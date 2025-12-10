@@ -1,4 +1,3 @@
-// src/App.jsx
 const App = () => {
   return (
     <div>

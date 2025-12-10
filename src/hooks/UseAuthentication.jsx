@@ -1,4 +1,3 @@
-// src/hooks/useAuthentication.js
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginOwner, loginWalker } from "../service/authService";

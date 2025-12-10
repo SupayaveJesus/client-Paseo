@@ -1,14 +1,92 @@
 // src/components/Header.jsx
-import { Container, Navbar } from "react-bootstrap";
+import { Container, Navbar, Nav } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import useAuthentication from "../hooks/useAuthentication";
 
 const Header = () => {
-    return (
-        <Navbar bg="dark" variant="dark">
-            <Container>
-                <Navbar.Brand>App Paseo de Mascotas</Navbar.Brand>
-            </Container>
-        </Navbar>
-    );
-}
+  // requireAuth = false → NO redirige, solo lee info de sesión
+  const { role, user, logout } = useAuthentication(false);
+
+  const isLogged = !!role; // hay sesión si tenemos rol guardado
+
+  // Ruta de inicio según rol
+  const homePath =
+    role === "owner"
+      ? "/owner/home"
+      : role === "walker"
+      ? "/walker/home"
+      : "/login-owner";
+
+  return (
+    <Navbar bg="dark" variant="dark" expand="lg">
+      <Container>
+        {/* Logo / título que te lleva al home según rol */}
+        <Navbar.Brand as={Link} to={homePath}>
+          App Paseo de Mascotas
+        </Navbar.Brand>
+
+        <Navbar.Toggle aria-controls="main-navbar" />
+        <Navbar.Collapse id="main-navbar">
+          <Nav className="me-auto">
+            {role === "owner" && (
+              <>
+                <Nav.Link as={Link} to="/owner/home">
+                  Inicio
+                </Nav.Link>
+                <Nav.Link as={Link} to="/owner/pets">
+                  Mis mascotas
+                </Nav.Link>
+                <Nav.Link as={Link} to="/owner/walks">
+                  Paseos
+                </Nav.Link>
+              </>
+            )}
+
+            {role === "walker" && (
+              <>
+                <Nav.Link as={Link} to="/walker/home">
+                  Inicio
+                </Nav.Link>
+                <Nav.Link as={Link} to="/walker/walks">
+                  Mis paseos
+                </Nav.Link>
+                <Nav.Link as={Link} to="/walker/reviews">
+                  Mis reviews
+                </Nav.Link>
+              </>
+            )}
+          </Nav>
+
+          <Nav>
+            {isLogged ? (
+              <>
+                <Navbar.Text className="me-3">
+                  {role === "owner" ? "Dueño:" : "Paseador:"}{" "}
+                  <strong>{user?.name}</strong>
+                </Navbar.Text>
+                <Nav.Link
+                  onClick={() => {
+                    logout();
+                  }}
+                >
+                  Cerrar sesión
+                </Nav.Link>
+              </>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login-owner">
+                  Login dueño
+                </Nav.Link>
+                <Nav.Link as={Link} to="/login-walker">
+                  Login paseador
+                </Nav.Link>
+              </>
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
+  );
+};
 
 export default Header;
