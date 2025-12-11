@@ -8,7 +8,11 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${getAccessToken()}`
 });
 
-// GET /walks  (lista del dueño)
+// ======================================
+// PASEOS DEL DUEÑO
+// ======================================
+
+// GET /walks  (lista de paseos del dueño)
 const getOwnerWalks = () => {
   return new Promise((resolve, reject) => {
     axios
@@ -17,7 +21,7 @@ const getOwnerWalks = () => {
       })
       .then((response) => resolve(response.data))
       .catch((error) => {
-        console.error(error);
+        console.error("getOwnerWalks error:", error);
         reject(error);
       });
   });
@@ -32,12 +36,13 @@ const getWalkDetail = (id) => {
       })
       .then((response) => resolve(response.data))
       .catch((error) => {
-        console.error(error);
+        console.error("getWalkDetail error:", error);
         reject(error);
       });
   });
 };
 
+// GET /walks/:id/photos  (fotos del paseo)
 const getWalkPhotos = (id) => {
   return new Promise((resolve, reject) => {
     axios
@@ -46,20 +51,21 @@ const getWalkPhotos = (id) => {
       })
       .then((response) => resolve(response.data))
       .catch((error) => {
-        console.error(error);
+        console.error("getWalkPhotos error:", error);
         reject(error);
       });
   });
 };
 
+// POST /walks  (crear paseo nuevo)
 const createWalk = (walkData) => {
   return new Promise((resolve, reject) => {
     axios
-      .post(`${BASE_URL}/walks`, walkData, {   // ⬅️ /walks
+      .post(`${BASE_URL}/walks`, walkData, {
         headers: {
           ...getAuthHeaders(),
-          "Content-Type": "application/json",
-        },
+          "Content-Type": "application/json"
+        }
       })
       .then((response) => resolve(response.data))
       .catch((error) => {
@@ -69,6 +75,7 @@ const createWalk = (walkData) => {
   });
 };
 
+// POST /walks/:id/review  (review del dueño al paseador)
 const leaveReview = (id, reviewData) => {
   return new Promise((resolve, reject) => {
     axios
@@ -80,10 +87,16 @@ const leaveReview = (id, reviewData) => {
       })
       .then((response) => resolve(response.data))
       .catch((error) => {
-        console.error(error);
+        console.error("leaveReview error:", error);
         reject(error);
       });
   });
 };
 
-export { getOwnerWalks, getWalkDetail, getWalkPhotos, createWalk, leaveReview };
+export {
+  getOwnerWalks,
+  getWalkDetail,
+  getWalkPhotos,
+  createWalk,
+  leaveReview
+};

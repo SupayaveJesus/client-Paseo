@@ -1,4 +1,3 @@
-// src/service/authService.js
 import axios from "axios";
 
 const BASE_URL = "http://localhost:3000";
@@ -8,7 +7,7 @@ const loginOwner = (loginData) => {
     return new Promise((resolve, reject) => {
         axios.post(`${BASE_URL}/auth/clientlogin`, loginData)
             .then((response) => {
-                resolve(response.data);   // { token, owner: {...} }
+                resolve(response.data);   
             })
             .catch((error) => {
                 console.error(error);
@@ -22,7 +21,7 @@ const loginWalker = (loginData) => {
     return new Promise((resolve, reject) => {
         axios.post(`${BASE_URL}/auth/walkerlogin`, loginData)
             .then((response) => {
-                resolve(response.data);   // { token, walker: {...} }
+                resolve(response.data);   
             })
             .catch((error) => {
                 console.error(error);

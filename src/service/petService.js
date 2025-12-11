@@ -1,4 +1,3 @@
-// src/service/petService.js
 import axios from "axios";
 import { getAccessToken } from "../utils/TokenUtilities";
 
@@ -12,7 +11,7 @@ const getAuthHeaders = () => ({
 const getPets = () => {
   return new Promise((resolve, reject) => {
     axios
-      .get(`${BASE_URL}/pets`, {          // ⬅️ /pets
+      .get(`${BASE_URL}/pets`, {         
         headers: getAuthHeaders(),
       })
       .then((response) => resolve(response.data))
@@ -27,7 +26,7 @@ const getPets = () => {
 const createPet = (petData) => {
   return new Promise((resolve, reject) => {
     axios
-      .post(`${BASE_URL}/pets`, petData, {   // ⬅️ /pets
+      .post(`${BASE_URL}/pets`, petData, {   
         headers: {
           ...getAuthHeaders(),
           "Content-Type": "application/json",
