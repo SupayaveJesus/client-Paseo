@@ -24,9 +24,14 @@ const PhotoProfilePets = () => {
 
   const [file, setFile] = useState(null);
 
+  // messages
+  const [message, setMessage] = useState("");
+  const [messageVariant, setMessageVariant] = useState("");
+
   useEffect(() => {
     if (!petFromState) {
-      alert("No se encontraron datos de la mascota. Volviendo a la lista.");
+      setMessageVariant("danger");
+      setMessage("No se encontraron datos de la mascota. Volviendo a la lista.");
       navigate("/owner/pets");
     }
   }, [petFromState, navigate]);
@@ -36,18 +41,21 @@ const PhotoProfilePets = () => {
     event.stopPropagation();
 
     if (!file) {
-      alert("Debes seleccionar una imagen");
+      setMessageVariant("danger");
+      setMessage("Debes seleccionar una imagen");
       return;
     }
 
     uploadPetPhoto(id, file)
       .then(() => {
-        alert("Foto actualizada");
+        setMessageVariant("danger");
+        setMessage("Foto actualizada");
         navigate("/owner/pets");
       })
       .catch((error) => {
         console.error(error);
-        alert("Error al subir foto");
+        setMessageVariant("danger");
+        setMessage("Error al subir foto");
       });
   };
 

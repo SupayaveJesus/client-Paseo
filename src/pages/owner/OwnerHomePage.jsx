@@ -5,7 +5,7 @@ import Header from "../../components/Header";
 import useAuthentication from "../../hooks/useAuthentication";
 
 const OwnerHomePage = () => {
-  useAuthentication(true, "owner"); // exige dueño logueado
+  useAuthentication(true, "owner"); 
   const navigate = useNavigate();
 
   return (

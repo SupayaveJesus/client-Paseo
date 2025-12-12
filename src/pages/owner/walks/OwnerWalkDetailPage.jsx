@@ -1,3 +1,4 @@
+// src/pages/owner/walks/OwnerWalkDetailPage.jsx
 import { useEffect, useState } from "react";
 import {
   Button,
@@ -9,9 +10,10 @@ import {
   FormGroup,
   Image,
   ListGroup,
-  Row
+  Row,
+  Alert
 } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Header from "../../../components/Header";
 import useAuthentication from "../../../hooks/useAuthentication";
 import {
@@ -22,28 +24,85 @@ import {
 } from "../../../service/walkService";
 import { getPets } from "../../../service/petService";
 
-const BASE_URL = "http://localhost:3000";
+import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 
+const BASE_URL = "http://localhost:3000";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+// =========================
+// Helpers
+// =========================
 const formatDate = (isoString) => {
   if (!isoString) return "";
   const d = new Date(isoString);
   return d.toLocaleString();
 };
 
+// Mapa del recorrido del paseo
+const WalkRouteMap = ({ locations }) => {
+  if (!GOOGLE_MAPS_API_KEY) {
+    return (
+      <Alert variant="warning" className="mt-2">
+        Para ver el mapa del recorrido configura <code>VITE_GOOGLE_MAPS_API_KEY</code>.
+      </Alert>
+    );
+  }
+
+  if (!locations || locations.length === 0) {
+    return null; // el texto de "no hay puntos" lo mostramos abajo
+  }
+
+  const path = locations.map((loc) => ({
+    lat: Number(loc.lat),
+    lng: Number(loc.lng)
+  }));
+
+  // centro en el último punto (posición actual del paseador)
+  const center = path[path.length - 1];
+
+  return (
+    <div
+      className="mt-2 mb-3"
+      style={{
+        height: "300px",
+        width: "100%",
+        borderRadius: "6px",
+        overflow: "hidden",
+        border: "1px solid #ddd"
+      }}
+    >
+      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+        <Map
+          defaultCenter={center}
+          defaultZoom={16}
+          gestureHandling="greedy"
+          disableDefaultUI={true}
+        >
+          {path.map((pos, idx) => (
+            <Marker key={idx} position={pos} />
+          ))}
+        </Map>
+      </APIProvider>
+    </div>
+  );
+};
+
 const OwnerWalkDetailPage = () => {
-  // solo dueños logueados
   useAuthentication(true, "owner");
 
   const navigate = useNavigate();
-  const { id } = useParams();          // "new" o un id numérico
+  const { id } = useParams();
+  const location = useLocation();
   const isNew = id === "new" || !id;
 
-  // ---- estado general ----
   const [loading, setLoading] = useState(!isNew);
   const [walk, setWalk] = useState(null);
   const [photos, setPhotos] = useState([]);
 
-  // ---- estado para crear paseo ----
+  const [message, setMessage] = useState("");
+  const [messageVariant, setMessageVariant] = useState("");
+
+  // crear paseo
   const [pets, setPets] = useState([]);
   const [petId, setPetId] = useState("");
   const [date, setDate] = useState("");
@@ -52,14 +111,16 @@ const OwnerWalkDetailPage = () => {
   const [notes, setNotes] = useState("");
   const [savingNew, setSavingNew] = useState(false);
 
-  // ---- estado para review ----
+  // review
   const [rating, setRating] = useState("5");
   const [comment, setComment] = useState("");
   const [loadingReview, setLoadingReview] = useState(false);
 
-  // Cargar datos
+  // info del paseador seleccionado (cuando vienes desde /owner/walkers/:id)
+  const preselectedWalker = location.state?.walkerName;
+  const preselectedWalkerId = location.state?.walkerId;
+
   useEffect(() => {
-    // MODO NUEVO → solo mascotas
     if (isNew) {
       setLoading(false);
       setWalk(null);
@@ -74,13 +135,13 @@ const OwnerWalkDetailPage = () => {
         })
         .catch((error) => {
           console.error(error);
-          alert("Error al cargar mascotas");
+          setMessageVariant("danger");
+          setMessage("Error al cargar mascotas");
         });
 
       return;
     }
 
-    // MODO DETALLE → paseo + fotos
     setLoading(true);
     Promise.all([getWalkDetail(id), getWalkPhotos(id)])
       .then(([walkData, photosData]) => {
@@ -89,19 +150,18 @@ const OwnerWalkDetailPage = () => {
       })
       .catch((error) => {
         console.error(error);
-        alert("Error al cargar detalle del paseo");
+        setMessageVariant("danger");
+        setMessage("Error al cargar detalles del paseo");
       })
       .finally(() => setLoading(false));
   }, [id, isNew]);
 
-  // ===========================
-  //  HANDLER CREAR PASEO
-  // ===========================
   const onNewWalkSubmit = (event) => {
     event.preventDefault();
 
     if (!petId || !date || !time) {
-      alert("Mascota, fecha y hora son obligatorios");
+      setMessageVariant("danger");
+      setMessage("Mascota, fecha y hora son obligatorios");
       return;
     }
 
@@ -114,27 +174,28 @@ const OwnerWalkDetailPage = () => {
       notes
     };
 
+    // si venimos con paseador preseleccionado, lo mandamos
+    if (preselectedWalkerId) {
+      payload.walkerId = preselectedWalkerId;
+    }
+
     setSavingNew(true);
     createWalk(payload)
       .then((created) => {
-        alert("Paseo creado correctamente");
+        setMessageVariant("success");
+        setMessage("Paseo creado correctamente");
         navigate(`/owner/walks/${created.id}`);
       })
       .catch((error) => {
         console.error(error);
-        alert("Error al crear el paseo");
+        setMessageVariant("danger");
+        setMessage("Error al crear el paseo");
       })
       .finally(() => setSavingNew(false));
   };
 
-  // ===========================
-  //  HANDLER REVIEW
-  // ===========================
   const canReview =
-    !isNew &&
-    walk &&
-    walk.status === "FINISHED" && // tu backend usa FINISHED
-    !walk.review;
+    !isNew && walk && walk.status === "FINISHED" && !walk.review;
 
   const onReviewSubmit = (event) => {
     event.preventDefault();
@@ -157,14 +218,24 @@ const OwnerWalkDetailPage = () => {
       .finally(() => setLoadingReview(false));
   };
 
-  // =====================================================
-  //  RENDER MODO NUEVO  (/owner/walks/new)
-  // =====================================================
+  // =========================
+  // MODO "NUEVO PASEO"
+  // =========================
   if (isNew) {
     return (
       <>
         <Header />
         <Container className="mt-3">
+          {message && (
+            <Alert
+              variant={messageVariant || "info"}
+              onClose={() => setMessage("")}
+              dismissible
+            >
+              {message}
+            </Alert>
+          )}
+
           <Row>
             <Col md={8}>
               <Card>
@@ -174,6 +245,13 @@ const OwnerWalkDetailPage = () => {
                     Completa el formulario para solicitar un nuevo paseo
                     para tu mascota.
                   </p>
+
+                  {preselectedWalker && (
+                    <p>
+                      <strong>Paseador seleccionado:</strong> {preselectedWalker}{" "}
+                      (ID {preselectedWalkerId})
+                    </p>
+                  )}
 
                   <Form onSubmit={onNewWalkSubmit}>
                     <FormGroup className="mb-2">
@@ -185,7 +263,9 @@ const OwnerWalkDetailPage = () => {
                         required
                       >
                         {pets.length === 0 && (
-                          <option value="">No tienes mascotas registradas</option>
+                          <option value="">
+                            No tienes mascotas registradas
+                          </option>
                         )}
                         {pets.map((p) => (
                           <option key={p.id} value={p.id}>
@@ -269,9 +349,9 @@ const OwnerWalkDetailPage = () => {
     );
   }
 
-  // =====================================================
-  //  RENDER MODO DETALLE EXISTENTE (/owner/walks/:id)
-  // =====================================================
+  // =========================
+  // MODO "DETALLE DE PASEO"
+  // =========================
   if (loading) {
     return (
       <>
@@ -301,6 +381,16 @@ const OwnerWalkDetailPage = () => {
     <>
       <Header />
       <Container className="mt-3">
+        {message && (
+          <Alert
+            variant={messageVariant || "info"}
+            onClose={() => setMessage("")}
+            dismissible
+          >
+            {message}
+          </Alert>
+        )}
+
         <Row>
           <Col md={8}>
             <Card>
@@ -324,9 +414,16 @@ const OwnerWalkDetailPage = () => {
                   <strong>Notas:</strong> {walk.notes || "Sin notas"}
                 </p>
 
-                <h5 className="mt-3">Recorrido (puntos)</h5>
+                <h5 className="mt-3">Recorrido</h5>
+
+                {/* Mapa del recorrido */}
+                <WalkRouteMap locations={walk.locations} />
+
+                {/* Lista de puntos */}
                 {walk.locations && walk.locations.length > 0 ? (
-                  <ListGroup style={{ maxHeight: "200px", overflowY: "auto" }}>
+                  <ListGroup
+                    style={{ maxHeight: "200px", overflowY: "auto" }}
+                  >
                     {walk.locations.map((loc) => (
                       <ListGroup.Item key={loc.id}>
                         {loc.lat}, {loc.lng} - {formatDate(loc.timestamp)}

@@ -21,12 +21,16 @@ const OwnerWalksPage = () => {
 
   const [walks, setWalks] = useState([]);
 
+  // messages
+  const [message, setMessage] = useState("");
+  const [messageVariant, setMessageVariant] = useState("");
+
   useEffect(() => {
     getOwnerWalks()
       .then((data) => setWalks(data))
-      .catch((error) => {
-        console.error(error);
-        alert("Error al cargar paseos");
+      .catch(() => {
+        setMessageVariant("danger");
+        setMessage("Error al cargar paseos");
       });
   }, []);
 
@@ -80,10 +84,11 @@ const OwnerWalksPage = () => {
                   <h2>Paseos</h2>
                   <Button
                     variant="primary"
-                    onClick={() => navigate("/owner/walks/new")}
+                    onClick={() => navigate("/owner/walkers/nearby")}
                   >
                     Nuevo paseo
                   </Button>
+
                 </div>
 
                 <h4 className="mt-3">Paseos actuales</h4>

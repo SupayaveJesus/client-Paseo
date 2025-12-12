@@ -19,12 +19,17 @@ const ListPets = () => {
   const navigate = useNavigate();
   const [pets, setPets] = useState([]);
 
+  // messages
+  const [message, setMessage] = useState("");
+  const [messageVariant, setMessageVariant] = useState("");
+  
   const loadPets = () => {
     getPets()
       .then((data) => setPets(data))
       .catch((error) => {
         console.error(error);
-        alert("Error al cargar mascotas");
+        setMessageVariant("danger");
+        setMessage("Error al cargar mascotas");
       });
   };
 
@@ -40,13 +45,14 @@ const ListPets = () => {
       })
       .catch((error) => {
         console.error(error);
-        alert("Error al eliminar mascota");
+        setMessageVariant("danger");
+        setMessage("Error al eliminar mascota");
       });
   };
 
   const renderPhoto = (pet) => {
     if (!pet.photoUrl) return "Sin foto";
-    const base = "http://localhost:3000"; // o tu BASE_URL
+    const base = "http://localhost:3000";
     return (
       <Image
         src={`${base}/uploads/pets/${pet.photoUrl}`}

@@ -1,12 +1,12 @@
-// src/pages/walker/WalkerWalksPage.jsx
 import { useEffect, useState } from "react";
 import {
+  Alert,
   Button,
   Card,
   Col,
   Container,
   Row,
-  Table
+  Table,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
@@ -16,7 +16,7 @@ import {
   getAcceptedWalks,
   getHistoryWalks,
   acceptWalk,
-  rejectWalk
+  rejectWalk,
 } from "../../service/walkerService";
 
 const formatDate = (iso) => {
@@ -34,13 +34,14 @@ const WalkerWalksPage = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // mensajes en pantalla
+  const [message, setMessage] = useState("");
+  const [messageVariant, setMessageVariant] = useState("success");
+
   const loadData = () => {
     setLoading(true);
-    Promise.all([
-      getPendingWalks(),
-      getAcceptedWalks(),
-      getHistoryWalks()
-    ])
+    setMessage("");
+    Promise.all([getPendingWalks(), getAcceptedWalks(), getHistoryWalks()])
       .then(([p, a, h]) => {
         setPending(p);
         setAccepted(a);
@@ -48,7 +49,8 @@ const WalkerWalksPage = () => {
       })
       .catch((err) => {
         console.error(err);
-        alert("Error al cargar paseos del paseador");
+        setMessageVariant("danger");
+        setMessage("Error al cargar paseos del paseador");
       })
       .finally(() => setLoading(false));
   };
@@ -59,26 +61,50 @@ const WalkerWalksPage = () => {
 
   const onAcceptClick = (id) => {
     if (!window.confirm("¿Aceptar este paseo?")) return;
+    setMessage("");
     acceptWalk(id)
       .then(() => {
+        setMessageVariant("success");
+        setMessage("Paseo aceptado correctamente");
         loadData();
       })
-      .catch(() => alert("Error al aceptar paseo"));
+      .catch((err) => {
+        console.error(err);
+        setMessageVariant("danger");
+        setMessage("Error al aceptar paseo");
+      });
   };
 
   const onRejectClick = (id) => {
     if (!window.confirm("¿Rechazar este paseo?")) return;
+    setMessage("");
     rejectWalk(id)
       .then(() => {
+        setMessageVariant("success");
+        setMessage("Paseo rechazado correctamente");
         loadData();
       })
-      .catch(() => alert("Error al rechazar paseo"));
+      .catch((err) => {
+        console.error(err);
+        setMessageVariant("danger");
+        setMessage("Error al rechazar paseo");
+      });
   };
 
   return (
     <>
       <Header />
       <Container className="mt-3">
+        {message && (
+          <Alert
+            variant={messageVariant}
+            onClose={() => setMessage("")}
+            dismissible
+          >
+            {message}
+          </Alert>
+        )}
+
         <h2>Mis paseos (Paseador)</h2>
 
         {loading && <p>Cargando...</p>}

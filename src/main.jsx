@@ -20,6 +20,9 @@ import PhotoProfilePets from "./pages/owner/pets/PhotoProfilePets";
 import OwnerWalksPage from "./pages/owner/walks/OwnerWalksPage";
 import OwnerWalkDetailPage from "./pages/owner/walks/OwnerWalkDetailPage";
 
+import OwnerSelectWalkerPage from "./pages/owner/walks/OwnerSelectWalkerPage";
+import OwnerWalkerDetailPage from "./pages/owner/walks/OwnerWalkerDetailPage";
+
 
 // src/main.jsx
 import WalkerHomePage from "./pages/walker/WalkerHomePage";
@@ -49,6 +52,11 @@ createRoot(document.getElementById("root")).render(
         {/* DUEÑO - PASEOS */}
         <Route path="/owner/walks" element={<OwnerWalksPage />} />
         <Route path="/owner/walks/:id" element={<OwnerWalkDetailPage />} />
+
+        {/* OWNER - selección de paseador para nuevo paseo */}
+        <Route path="/owner/walkers/nearby" element={<OwnerSelectWalkerPage />} />
+        <Route path="/owner/walkers/:id" element={<OwnerWalkerDetailPage />} />
+
 
         {/* AUTH PASEADOR */}
         <Route path="/login-walker" element={<WalkerLoginPage />} />

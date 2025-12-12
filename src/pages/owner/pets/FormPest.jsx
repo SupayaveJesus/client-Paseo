@@ -1,4 +1,3 @@
-// src/pages/owner/pets/FormMascota.jsx
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -20,7 +19,7 @@ const FormPet = () => {
   useAuthentication(true, "owner");
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = useParams(); // si existe, es edición
+  const { id } = useParams(); 
 
   const petFromState = location.state?.pet || null;
   const isEdit = !!id;
@@ -30,10 +29,13 @@ const FormPet = () => {
   const [type, setType] = useState(petFromState?.type || "");
   const [notes, setNotes] = useState(petFromState?.notes || "");
 
+  // messages
+  const [message, setMessage] = useState("");
+  const [messageVariant, setMessageVariant] = useState("");
+
   useEffect(() => {
-    // si recarga la página en modo editar SIN state, mejor volver a la lista
     if (isEdit && !petFromState) {
-      alert("No se encontraron datos de la mascota. Volviendo a la lista.");
+      setMessage("No se encontraron datos de la mascota. Volviendo a la lista.");
       navigate("/owner/pets");
     }
   }, [isEdit, petFromState, navigate]);
@@ -70,7 +72,7 @@ const FormPet = () => {
       })
       .catch((error) => {
         console.error(error);
-        alert("Error al guardar mascota");
+        setMessage("Error al guardar mascota");
       });
   };
 

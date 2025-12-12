@@ -90,7 +90,6 @@ const getAcceptedWalks = () => {
   });
 };
 
-// 🔴 IMPORTANTE: historial del paseador va a /walks/history
 // GET /walks/history  (historial del paseador)
 const getHistoryWalks = () => {
   return new Promise((resolve, reject) => {
@@ -195,6 +194,40 @@ const uploadWalkPhoto = (id, file) => {
   });
 };
 
+// GET /walks/walker/:id  (detalle de paseo para paseador)
+const getWalkerWalkDetail = (id) => {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`${BASE_URL}/walks/walker/${id}`, {
+        headers: getAuthHeaders()
+      })
+      .then((res) => resolve(res.data))
+      .catch((err) => {
+        console.error("getWalkerWalkDetail error:", err);
+        reject(err);
+      });
+  });
+};
+
+// ======================================
+// DETALLE DE PASEADOR (para el dueño)
+// ======================================
+
+// GET /walkers/:id
+const getWalkerById = (id) => {
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`${BASE_URL}/walkers/${id}`, {
+        headers: getAuthHeaders()
+      })
+      .then((res) => resolve(res.data))
+      .catch((err) => {
+        console.error("getWalkerById error:", err);
+        reject(err);
+      });
+  });
+};
+
 export {
   setAvailability,
   sendLocation,
@@ -205,5 +238,7 @@ export {
   rejectWalk,
   startWalk,
   endWalk,
-  uploadWalkPhoto
+  uploadWalkPhoto,
+  getWalkerWalkDetail,
+  getWalkerById
 };

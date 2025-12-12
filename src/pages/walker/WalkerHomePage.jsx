@@ -1,31 +1,125 @@
 // src/pages/walker/WalkerHomePage.jsx
-import { useState } from "react";
-import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Alert, Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import useAuthentication from "../../hooks/useAuthentication";
-import { setAvailability } from "../../service/walkerService";
+import { setAvailability, sendLocation } from "../../service/walkerService";
+
+const STORAGE_KEY = "walker_available";
 
 const WalkerHomePage = () => {
   // requiere estar logueado como walker
   useAuthentication(true, "walker");
 
   const navigate = useNavigate();
-  const [available, setAvailable] = useState(false);
+
+  // 🔹 leer estado inicial desde localStorage
+  const [available, setAvailable] = useState(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored === "true"; // true / false
+  });
+
   const [loading, setLoading] = useState(false);
 
+  // feedback en pantalla (reemplazo de alerts)
+  const [message, setMessage] = useState("");
+  const [messageVariant, setMessageVariant] = useState("info");
+  const [sendingLocation, setSendingLocation] = useState(false);
+
+  // -------------------------------
+  // Cambiar disponibilidad
+  // -------------------------------
   const onToggleAvailability = () => {
     const newState = !available;
     setLoading(true);
+    setMessage("");
+
     setAvailability(newState)
       .then(() => {
         setAvailable(newState);
+        localStorage.setItem(STORAGE_KEY, String(newState)); // 🔹 persistir
+
+        setMessageVariant("success");
+        setMessage(
+          newState
+            ? "Disponibilidad encendida. Empezaremos a enviar tu ubicación periódicamente."
+            : "Disponibilidad apagada. Se detuvo el envío de ubicación."
+        );
       })
-      .catch(() => {
-        alert("Error al cambiar disponibilidad");
+      .catch((err) => {
+        console.error(err);
+        setMessageVariant("danger");
+        setMessage("Error al cambiar disponibilidad.");
       })
       .finally(() => setLoading(false));
   };
+
+  // -------------------------------
+  // Enviar ubicación cada 3 minutos
+  // -------------------------------
+  useEffect(() => {
+    // si no está disponible, no hacemos nada
+    if (!available) {
+      setSendingLocation(false);
+      return;
+    }
+
+    if (!("geolocation" in navigator)) {
+      setMessageVariant("danger");
+      setMessage("Ubicación: tu navegador no soporta geolocalización.");
+      return;
+    }
+
+    let cancelled = false;
+
+    const sendCurrentLocation = () => {
+      setSendingLocation(true);
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          if (cancelled) return;
+
+          const { latitude, longitude } = pos.coords;
+          try {
+            await sendLocation(latitude, longitude);
+            setMessageVariant("success");
+            setMessage("Ubicación enviada correctamente al servidor.");
+          } catch (err) {
+            console.error(err);
+            setMessageVariant("danger");
+            setMessage("Error al enviar la ubicación al servidor.");
+          } finally {
+            if (!cancelled) setSendingLocation(false);
+          }
+        },
+        (err) => {
+          if (cancelled) return;
+          console.error(err);
+          setMessageVariant("danger");
+          setMessage(
+            "No se pudo obtener tu ubicación (revisa permisos de GPS)."
+          );
+          setSendingLocation(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000
+        }
+      );
+    };
+
+    // Enviamos una vez al encender disponibilidad
+    sendCurrentLocation();
+    // Y luego cada 3 minutos
+    const intervalId = setInterval(sendCurrentLocation, 3 * 60 * 1000);
+
+    // cleanup al apagar disponibilidad o desmontar componente
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [available]);
 
   return (
     <>
@@ -35,11 +129,12 @@ const WalkerHomePage = () => {
           <Col md={6}>
             <Card>
               <Card.Body>
-                <h2>Inicio - Paseador</h2>
+                <h2>Inicio</h2>
                 <p>
                   Desde aquí puedes gestionar tus paseos, ver tus reviews
                   y encender/apagar tu disponibilidad.
                 </p>
+
                 <div className="mb-3">
                   <Button
                     variant="primary"
@@ -73,6 +168,20 @@ const WalkerHomePage = () => {
                     ? "Apagar disponibilidad"
                     : "Encender disponibilidad"}
                 </Button>
+
+                {message && (
+                  <Alert
+                    variant={messageVariant}
+                    className="mt-3"
+                    dismissible
+                    onClose={() => setMessage("")}
+                  >
+                    {message}
+                    {available && sendingLocation && (
+                      <span> (enviando ubicación...)</span>
+                    )}
+                  </Alert>
+                )}
               </Card.Body>
             </Card>
           </Col>

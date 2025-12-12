@@ -7,92 +7,122 @@ import {
   Container,
   Form,
   FormControl,
-  FormGroup,
-  Image,
-  ListGroup,
-  Row
+  Row,
+  Alert,
 } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/Header";
 import useAuthentication from "../../hooks/useAuthentication";
-import { getWalkDetail, getWalkPhotos } from "../../service/walkService";
 import {
+  getWalkerWalkDetail,
   startWalk,
   endWalk,
-  uploadWalkPhoto
+  uploadWalkPhoto,
 } from "../../service/walkerService";
 
-const BASE_URL = "http://localhost:3000";
-
-const formatDate = (iso) => {
-  if (!iso) return "";
-  const d = new Date(iso);
+const formatDate = (isoString) => {
+  if (!isoString) return "";
+  const d = new Date(isoString);
   return d.toLocaleString();
 };
 
 const WalkerWalkDetailPage = () => {
   useAuthentication(true, "walker");
+
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [walk, setWalk] = useState(null);
-  const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [file, setFile] = useState(null);
+  const [walk, setWalk] = useState(null);
 
-  const loadData = () => {
+  const [message, setMessage] = useState("");
+  const [messageVariant, setMessageVariant] = useState("success");
+
+  const [photoFile, setPhotoFile] = useState(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const loadDetail = () => {
     setLoading(true);
-    Promise.all([getWalkDetail(id), getWalkPhotos(id)])
-      .then(([w, ph]) => {
-        setWalk(w);
-        setPhotos(ph);
+    getWalkerWalkDetail(id)
+      .then((data) => {
+        setWalk(data);
       })
-      .catch((err) => {
-        console.error(err);
-        alert("Error al cargar detalle del paseo");
+      .catch((error) => {
+        console.error("getWalkerWalkDetail error:", error);
+        setMessageVariant("danger");
+        setMessage("Error al cargar detalle del paseo");
       })
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    loadData();
+    loadDetail();
   }, [id]);
 
-  const onStartClick = () => {
-    if (!window.confirm("¿Iniciar este paseo?")) return;
-    startWalk(id)
+  const canStart = walk && walk.status === "ACCEPTED";
+  const canEnd = walk && walk.status === "IN_PROGRESS";
+  const canUploadPhoto =
+    walk && (walk.status === "IN_PROGRESS" || walk.status === "FINISHED");
+
+  const handleStartWalk = () => {
+    if (!walk) return;
+    setActionLoading(true);
+    setMessage("");
+    startWalk(walk.id)
       .then(() => {
-        loadData();
+        setMessageVariant("success");
+        setMessage("Paseo marcado como EN CURSO");
+        loadDetail();
       })
-      .catch(() => alert("Error al iniciar el paseo"));
+      .catch((err) => {
+        console.error("startWalk error:", err);
+        setMessageVariant("danger");
+        setMessage("No se pudo iniciar el paseo");
+      })
+      .finally(() => setActionLoading(false));
   };
 
-  const onEndClick = () => {
-    if (!window.confirm("¿Finalizar este paseo?")) return;
-    endWalk(id)
+  const handleEndWalk = () => {
+    if (!walk) return;
+    setActionLoading(true);
+    setMessage("");
+    endWalk(walk.id)
       .then(() => {
-        loadData();
+        setMessageVariant("success");
+        setMessage("Paseo marcado como FINALIZADO");
+        loadDetail();
       })
-      .catch(() => alert("Error al finalizar el paseo"));
+      .catch((err) => {
+        console.error("endWalk error:", err);
+        setMessageVariant("danger");
+        setMessage("No se pudo finalizar el paseo");
+      })
+      .finally(() => setActionLoading(false));
   };
 
-  const onUploadSubmit = (e) => {
+  const handlePhotoSubmit = (e) => {
     e.preventDefault();
-    if (!file) {
-      alert("Selecciona una foto");
+    if (!walk || !photoFile) {
+      setMessageVariant("warning");
+      setMessage("Selecciona una foto primero");
       return;
     }
-    setUploading(true);
-    uploadWalkPhoto(id, file)
+
+    setUploadingPhoto(true);
+    setMessage("");
+    uploadWalkPhoto(walk.id, photoFile)
       .then(() => {
-        setFile(null);
-        loadData();
+        setMessageVariant("success");
+        setMessage("Foto subida correctamente");
+        setPhotoFile(null);
       })
-      .catch(() => {
-        alert("Error al subir la foto");
+      .catch((err) => {
+        console.error("uploadWalkPhoto error:", err);
+        setMessageVariant("danger");
+        setMessage("No se pudo subir la foto");
       })
-      .finally(() => setUploading(false));
+      .finally(() => setUploadingPhoto(false));
   };
 
   if (loading) {
@@ -112,10 +142,7 @@ const WalkerWalkDetailPage = () => {
         <Header />
         <Container className="mt-3">
           <p>No se encontró el paseo.</p>
-          <Button
-            variant="secondary"
-            onClick={() => navigate("/walker/walks")}
-          >
+          <Button variant="secondary" onClick={() => navigate("/walker/walks")}>
             Volver
           </Button>
         </Container>
@@ -123,64 +150,61 @@ const WalkerWalkDetailPage = () => {
     );
   }
 
-  const canStart = walk.status === "ACCEPTED";
-  const canEnd = walk.status === "IN_PROGRESS";
-
   return (
     <>
       <Header />
       <Container className="mt-3">
+        {message && (
+          <Alert
+            variant={messageVariant}
+            onClose={() => setMessage("")}
+            dismissible
+          >
+            {message}
+          </Alert>
+        )}
+
         <Row>
           <Col md={8}>
             <Card>
               <Card.Body>
                 <h2>Detalle del paseo #{walk.id}</h2>
                 <p>
-                  <strong>Fecha / hora:</strong>{" "}
-                  {formatDate(walk.scheduledAt)}
+                  <strong>Fecha / hora:</strong> {formatDate(walk.scheduledAt)}
                 </p>
                 <p>
-                  <strong>Estado:</strong> {walk.status}
-                </p>
+                  <strong>Estado:</strong> {walk.status}</p>
                 <p>
-                  <strong>Mascota:</strong> {walk.pet?.name}</p>
+                  <strong>Mascota:</strong> {walk.pet?.name}
+                </p>
                 <p>
                   <strong>Notas del dueño:</strong>{" "}
                   {walk.notes || "Sin notas"}
                 </p>
 
-                <h5 className="mt-3">Recorrido (puntos)</h5>
-                {walk.locations && walk.locations.length > 0 ? (
-                  <ListGroup style={{ maxHeight: "200px", overflowY: "auto" }}>
-                    {walk.locations.map((loc) => (
-                      <ListGroup.Item key={loc.id}>
-                        {loc.lat}, {loc.lng} - {formatDate(loc.timestamp)}
-                      </ListGroup.Item>
-                    ))}
-                  </ListGroup>
-                ) : (
-                  <p>Aún no hay puntos de ubicación registrados.</p>
-                )}
-
                 <div className="mt-3">
                   {canStart && (
                     <Button
-                      className="me-2"
                       variant="success"
-                      onClick={onStartClick}
+                      className="me-2"
+                      disabled={actionLoading}
+                      onClick={handleStartWalk}
                     >
-                      Iniciar paseo
+                      {actionLoading ? "Procesando..." : "Iniciar paseo"}
                     </Button>
                   )}
+
                   {canEnd && (
                     <Button
-                      className="me-2"
                       variant="danger"
-                      onClick={onEndClick}
+                      className="me-2"
+                      disabled={actionLoading}
+                      onClick={handleEndWalk}
                     >
-                      Finalizar paseo
+                      {actionLoading ? "Procesando..." : "Finalizar paseo"}
                     </Button>
                   )}
+
                   <Button
                     variant="secondary"
                     onClick={() => navigate("/walker/walks")}
@@ -193,45 +217,28 @@ const WalkerWalkDetailPage = () => {
           </Col>
 
           <Col md={4} className="mt-3 mt-md-0">
-            <Card>
-              <Card.Body>
-                <h5>Fotos del paseo</h5>
-                {photos.length === 0 && <p>No hay fotos.</p>}
-                <div>
-                  {photos.map((p) => (
-                    <div key={p.id} className="mb-2">
-                      {p.photoUrl && (
-                        <Image
-                          src={`${BASE_URL}/uploads/walks/${p.photoUrl}`}
-                          thumbnail
-                          style={{ maxWidth: "100%" }}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <hr />
-
-                <Form onSubmit={onUploadSubmit}>
-                  <FormGroup className="mb-2">
-                    <Form.Label>Subir nueva foto</Form.Label>
+            {canUploadPhoto && (
+              <Card>
+                <Card.Body>
+                  <h5>Subir foto del paseo</h5>
+                  <Form onSubmit={handlePhotoSubmit}>
                     <FormControl
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setFile(e.target.files[0] || null)}
+                      className="mb-2"
+                      onChange={(e) => setPhotoFile(e.target.files[0] || null)}
                     />
-                  </FormGroup>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    disabled={uploading}
-                  >
-                    {uploading ? "Subiendo..." : "Subir foto"}
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Card>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={uploadingPhoto || !photoFile}
+                    >
+                      {uploadingPhoto ? "Subiendo..." : "Subir foto"}
+                    </Button>
+                  </Form>
+                </Card.Body>
+              </Card>
+            )}
           </Col>
         </Row>
       </Container>
