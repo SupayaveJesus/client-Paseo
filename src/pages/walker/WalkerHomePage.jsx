@@ -1,4 +1,3 @@
-// src/pages/walker/WalkerHomePage.jsx
 import { useEffect, useState } from "react";
 import { Alert, Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -9,27 +8,21 @@ import { setAvailability, sendLocation } from "../../service/walkerService";
 const STORAGE_KEY = "walker_available";
 
 const WalkerHomePage = () => {
-  // requiere estar logueado como walker
   useAuthentication(true, "walker");
 
   const navigate = useNavigate();
 
-  // 🔹 leer estado inicial desde localStorage
   const [available, setAvailable] = useState(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === "true"; // true / false
+    return stored === "true"; 
   });
 
   const [loading, setLoading] = useState(false);
 
-  // feedback en pantalla (reemplazo de alerts)
   const [message, setMessage] = useState("");
   const [messageVariant, setMessageVariant] = useState("info");
   const [sendingLocation, setSendingLocation] = useState(false);
 
-  // -------------------------------
-  // Cambiar disponibilidad
-  // -------------------------------
   const onToggleAvailability = () => {
     const newState = !available;
     setLoading(true);
@@ -55,11 +48,7 @@ const WalkerHomePage = () => {
       .finally(() => setLoading(false));
   };
 
-  // -------------------------------
-  // Enviar ubicación cada 3 minutos
-  // -------------------------------
   useEffect(() => {
-    // si no está disponible, no hacemos nada
     if (!available) {
       setSendingLocation(false);
       return;
@@ -109,12 +98,9 @@ const WalkerHomePage = () => {
       );
     };
 
-    // Enviamos una vez al encender disponibilidad
     sendCurrentLocation();
-    // Y luego cada 3 minutos
     const intervalId = setInterval(sendCurrentLocation, 3 * 60 * 1000);
 
-    // cleanup al apagar disponibilidad o desmontar componente
     return () => {
       cancelled = true;
       clearInterval(intervalId);

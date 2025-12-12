@@ -1,4 +1,3 @@
-// src/pages/owner/walks/OwnerWalkDetailPage.jsx
 import { useEffect, useState } from "react";
 import {
   Button,
@@ -24,21 +23,22 @@ import {
 } from "../../../service/walkService";
 import { getPets } from "../../../service/petService";
 
-import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
+import {
+  GoogleMap,
+  Marker,
+  Polyline,
+  useJsApiLoader
+} from "@react-google-maps/api";
 
 const BASE_URL = "http://localhost:3000";
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
-// =========================
-// Helpers
-// =========================
 const formatDate = (isoString) => {
   if (!isoString) return "";
   const d = new Date(isoString);
   return d.toLocaleString();
 };
 
-// Mapa del recorrido del paseo
 const WalkRouteMap = ({ locations }) => {
   if (!GOOGLE_MAPS_API_KEY) {
     return (
@@ -49,7 +49,7 @@ const WalkRouteMap = ({ locations }) => {
   }
 
   if (!locations || locations.length === 0) {
-    return null; // el texto de "no hay puntos" lo mostramos abajo
+    return null;
   }
 
   const path = locations.map((loc) => ({
@@ -57,8 +57,18 @@ const WalkRouteMap = ({ locations }) => {
     lng: Number(loc.lng)
   }));
 
-  // centro en el último punto (posición actual del paseador)
   const center = path[path.length - 1];
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY
+  });
+
+  if (!isLoaded) {
+    return (
+      <Alert variant="info" className="mt-2">
+        Cargando mapa...
+      </Alert>
+    );
+  }
 
   return (
     <div
@@ -71,18 +81,19 @@ const WalkRouteMap = ({ locations }) => {
         border: "1px solid #ddd"
       }}
     >
-      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
-        <Map
-          defaultCenter={center}
-          defaultZoom={16}
-          gestureHandling="greedy"
-          disableDefaultUI={true}
-        >
-          {path.map((pos, idx) => (
-            <Marker key={idx} position={pos} />
-          ))}
-        </Map>
-      </APIProvider>
+      <GoogleMap
+        center={center}
+        zoom={16}
+        mapContainerStyle={{ width: "100%", height: "100%" }}
+        options={{ disableDefaultUI: true, gestureHandling: "greedy" }}
+      >
+        <Polyline
+          path={path}
+          options={{ strokeColor: "#0d6efd", strokeOpacity: 0.9, strokeWeight: 4 }}
+        />
+        <Marker position={path[0]} label="Inicio" />
+        <Marker position={path[path.length - 1]} label="Fin" />
+      </GoogleMap>
     </div>
   );
 };

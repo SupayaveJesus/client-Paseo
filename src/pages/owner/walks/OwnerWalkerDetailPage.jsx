@@ -1,4 +1,3 @@
-// src/pages/owner/walkers/OwnerWalkerDetailPage.jsx
 import { useEffect, useState } from "react";
 import {
     Button,

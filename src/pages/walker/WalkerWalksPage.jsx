@@ -34,7 +34,6 @@ const WalkerWalksPage = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // mensajes en pantalla
   const [message, setMessage] = useState("");
   const [messageVariant, setMessageVariant] = useState("success");
 
@@ -109,7 +108,6 @@ const WalkerWalksPage = () => {
 
         {loading && <p>Cargando...</p>}
 
-        {/* Pendientes */}
         <Card className="mt-3">
           <Card.Body>
             <h4>Solicitudes pendientes</h4>
@@ -159,7 +157,6 @@ const WalkerWalksPage = () => {
           </Card.Body>
         </Card>
 
-        {/* Aceptados */}
         <Card className="mt-3">
           <Card.Body>
             <h4>Paseos aceptados</h4>
@@ -201,7 +198,6 @@ const WalkerWalksPage = () => {
           </Card.Body>
         </Card>
 
-        {/* Historial */}
         <Card className="mt-3 mb-4">
           <Card.Body>
             <h4>Historial de paseos</h4>

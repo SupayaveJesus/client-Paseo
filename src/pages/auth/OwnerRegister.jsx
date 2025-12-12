@@ -1,4 +1,3 @@
-// src/pages/auth/FormOwnerRegister.jsx
 import { useState } from "react";
 import {
   Button,

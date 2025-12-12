@@ -1,4 +1,3 @@
-// src/pages/owner/walks/OwnerWalksPage.jsx
 import { useEffect, useState } from "react";
 import {
   Button,
@@ -21,7 +20,6 @@ const OwnerWalksPage = () => {
 
   const [walks, setWalks] = useState([]);
 
-  // messages
   const [message, setMessage] = useState("");
   const [messageVariant, setMessageVariant] = useState("");
 

@@ -1,4 +1,3 @@
-// src/pages/auth/FormWalkerRegister.jsx
 import { useState } from "react";
 import {
   Button,

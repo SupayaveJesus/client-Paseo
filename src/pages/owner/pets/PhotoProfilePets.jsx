@@ -1,4 +1,3 @@
-// src/pages/owner/pets/FotoPerfilMascota.jsx
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -24,7 +23,6 @@ const PhotoProfilePets = () => {
 
   const [file, setFile] = useState(null);
 
-  // messages
   const [message, setMessage] = useState("");
   const [messageVariant, setMessageVariant] = useState("");
 

@@ -18,6 +18,7 @@ import {
   startWalk,
   endWalk,
   uploadWalkPhoto,
+  sendLocation,          
 } from "../../service/walkerService";
 
 const formatDate = (isoString) => {
@@ -41,6 +42,7 @@ const WalkerWalkDetailPage = () => {
   const [photoFile, setPhotoFile] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [sendingLocation, setSendingLocation] = useState(false); 
 
   const loadDetail = () => {
     setLoading(true);
@@ -64,6 +66,7 @@ const WalkerWalkDetailPage = () => {
   const canEnd = walk && walk.status === "IN_PROGRESS";
   const canUploadPhoto =
     walk && (walk.status === "IN_PROGRESS" || walk.status === "FINISHED");
+  const canSendLocation = walk && walk.status === "IN_PROGRESS";
 
   const handleStartWalk = () => {
     if (!walk) return;
@@ -99,6 +102,48 @@ const WalkerWalkDetailPage = () => {
         setMessage("No se pudo finalizar el paseo");
       })
       .finally(() => setActionLoading(false));
+  };
+
+  const handleSendLocation = () => {
+    if (!("geolocation" in navigator)) {
+      setMessageVariant("warning");
+      setMessage("Tu navegador no soporta geolocalización.");
+      return;
+    }
+
+    setSendingLocation(true);
+    setMessage("");
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+
+        sendLocation(latitude, longitude)
+          .then(() => {
+            console.log("Ubicación enviada:", latitude, longitude);
+            setMessageVariant("success");
+            setMessage("Ubicación enviada correctamente.");
+          })
+          .catch((err) => {
+            console.error("sendLocation error:", err);
+            setMessageVariant("danger");
+            setMessage("Error al enviar la ubicación.");
+          })
+          .finally(() => setSendingLocation(false));
+      },
+      (err) => {
+        console.error(err);
+        setMessageVariant("warning");
+        setMessage(
+          "No se pudo obtener tu ubicación (permiso denegado o error)."
+        );
+        setSendingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+      }
+    );
   };
 
   const handlePhotoSubmit = (e) => {
@@ -173,7 +218,8 @@ const WalkerWalkDetailPage = () => {
                   <strong>Fecha / hora:</strong> {formatDate(walk.scheduledAt)}
                 </p>
                 <p>
-                  <strong>Estado:</strong> {walk.status}</p>
+                  <strong>Estado:</strong> {walk.status}
+                </p>
                 <p>
                   <strong>Mascota:</strong> {walk.pet?.name}
                 </p>
@@ -202,6 +248,19 @@ const WalkerWalkDetailPage = () => {
                       onClick={handleEndWalk}
                     >
                       {actionLoading ? "Procesando..." : "Finalizar paseo"}
+                    </Button>
+                  )}
+
+                  {canSendLocation && (
+                    <Button
+                      variant="outline-primary"
+                      className="me-2"
+                      disabled={sendingLocation}
+                      onClick={handleSendLocation}
+                    >
+                      {sendingLocation
+                        ? "Enviando ubicación..."
+                        : "Enviar ubicación actual"}
                     </Button>
                   )}
 

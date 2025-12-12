@@ -1,4 +1,3 @@
-// src/pages/owner/pets/ListaMascotas.jsx
 import { useEffect, useState } from "react";
 import {
   Button,
@@ -19,7 +18,6 @@ const ListPets = () => {
   const navigate = useNavigate();
   const [pets, setPets] = useState([]);
 
-  // messages
   const [message, setMessage] = useState("");
   const [messageVariant, setMessageVariant] = useState("");
   

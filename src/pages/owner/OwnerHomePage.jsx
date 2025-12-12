@@ -1,4 +1,3 @@
-// src/pages/owner/OwnerHomePage.jsx
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";

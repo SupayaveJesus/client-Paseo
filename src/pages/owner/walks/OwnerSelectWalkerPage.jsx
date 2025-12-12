@@ -43,13 +43,11 @@ const OwnerSelectWalkerPage = () => {
   };
 
   useEffect(() => {
-    // Intentar usar GPS del dueño
     if (!("geolocation" in navigator)) {
       setVariant("warning");
       setMessage(
         "Tu navegador no soporta geolocalización. Se usará una ubicación por defecto."
       );
-      // puedes cambiar estas coords si quieres
       fetchNearby(-17.7833, -63.1833);
       return;
     }

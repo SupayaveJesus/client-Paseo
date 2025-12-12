@@ -29,7 +29,6 @@ const FormPet = () => {
   const [type, setType] = useState(petFromState?.type || "");
   const [notes, setNotes] = useState(petFromState?.notes || "");
 
-  // messages
   const [message, setMessage] = useState("");
   const [messageVariant, setMessageVariant] = useState("");
 
