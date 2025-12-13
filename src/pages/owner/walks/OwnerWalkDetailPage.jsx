@@ -1,4 +1,3 @@
-// src/pages/owner/walks/OwnerWalkDetailPage.jsx
 import { useEffect, useState } from "react";
 import {
   Button,
@@ -7,7 +6,6 @@ import {
   Container,
   Form,
   FormControl,
-  FormGroup,
   Image,
   ListGroup,
   Row,
@@ -44,8 +42,7 @@ const WalkRouteMap = ({ locations }) => {
   if (!GOOGLE_MAPS_API_KEY) {
     return (
       <Alert variant="warning" className="mt-2">
-        Para ver el mapa del recorrido configura{" "}
-        <code>VITE_GOOGLE_MAPS_API_KEY</code>.
+        Para ver el mapa del recorrido configura <code>VITE_GOOGLE_MAPS_API_KEY</code>.
       </Alert>
     );
   }
@@ -108,9 +105,6 @@ const OwnerWalkDetailPage = () => {
   const location = useLocation();
   const isNew = id === "new" || !id;
 
-  // viene desde un paseo rechazado
-  const fromWalk = location.state?.fromWalk || null;
-
   const [loading, setLoading] = useState(!isNew);
   const [walk, setWalk] = useState(null);
   const [photos, setPhotos] = useState([]);
@@ -118,7 +112,6 @@ const OwnerWalkDetailPage = () => {
   const [message, setMessage] = useState("");
   const [messageVariant, setMessageVariant] = useState("");
 
-  // crear paseo
   const [pets, setPets] = useState([]);
   const [petId, setPetId] = useState("");
   const [date, setDate] = useState("");
@@ -127,14 +120,14 @@ const OwnerWalkDetailPage = () => {
   const [notes, setNotes] = useState("");
   const [savingNew, setSavingNew] = useState(false);
 
-  // review
   const [rating, setRating] = useState("5");
   const [comment, setComment] = useState("");
   const [loadingReview, setLoadingReview] = useState(false);
 
-  // =========================
-  // CARGA INICIAL
-  // =========================
+  const preselectedWalker = location.state?.walkerName;
+  const preselectedWalkerId = location.state?.walkerId;
+
+  // ---------- Carga inicial ----------
   useEffect(() => {
     if (isNew) {
       setLoading(false);
@@ -144,35 +137,8 @@ const OwnerWalkDetailPage = () => {
       getPets()
         .then((data) => {
           setPets(data);
-
           if (data.length > 0) {
-            // si venimos de un paseo rechazado, usamos esa mascota
-            if (fromWalk?.petId) {
-              setPetId(String(fromWalk.petId));
-            } else {
-              setPetId(String(data[0].id));
-            }
-          }
-
-          // pre-rellenar fecha/hora si venimos de REJECTED
-          if (fromWalk?.scheduledAt) {
-            const d = new Date(fromWalk.scheduledAt);
-            const yyyy = d.getFullYear();
-            const mm = String(d.getMonth() + 1).padStart(2, "0");
-            const dd = String(d.getDate()).padStart(2, "0");
-            const hh = String(d.getHours()).padStart(2, "0");
-            const mi = String(d.getMinutes()).padStart(2, "0");
-
-            setDate(`${yyyy}-${mm}-${dd}`);
-            setTime(`${hh}:${mi}`);
-          }
-
-          if (typeof fromWalk?.durationMinutes === "number") {
-            setDurationMinutes(fromWalk.durationMinutes);
-          }
-
-          if (fromWalk?.notes) {
-            setNotes(fromWalk.notes);
+            setPetId(String(data[0].id));
           }
         })
         .catch((error) => {
@@ -196,11 +162,31 @@ const OwnerWalkDetailPage = () => {
         setMessage("Error al cargar detalles del paseo");
       })
       .finally(() => setLoading(false));
-  }, [id, isNew, fromWalk]);
+  }, [id, isNew]);
 
-  // =========================
-  // CREAR NUEVO PASEO
-  // =========================
+  // ---------- Auto-refresh cada 60s cuando el paseo está aceptado / en curso ----------
+  useEffect(() => {
+    if (isNew) return;
+    if (!walk) return;
+
+    // Mientras esté ACCEPTED o IN_PROGRESS, refrescamos cada minuto
+    if (walk.status !== "ACCEPTED" && walk.status !== "IN_PROGRESS") return;
+
+    const intervalId = setInterval(() => {
+      getWalkDetail(id)
+        .then((walkData) => {
+          setWalk(walkData);
+        })
+        .catch((err) => {
+          console.error("Auto-refresh walk detail error:", err);
+          // No mostramos alerta aquí para no molestar al usuario cada minuto
+        });
+    }, 60 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, [id, isNew, walk?.status]);
+
+  // ---------- Crear nuevo paseo ----------
   const onNewWalkSubmit = (event) => {
     event.preventDefault();
 
@@ -219,8 +205,6 @@ const OwnerWalkDetailPage = () => {
       notes
     };
 
-    // si venimos con paseador preseleccionado, lo mandamos
-    const preselectedWalkerId = location.state?.walkerId;
     if (preselectedWalkerId) {
       payload.walkerId = preselectedWalkerId;
     }
@@ -264,13 +248,8 @@ const OwnerWalkDetailPage = () => {
       .finally(() => setLoadingReview(false));
   };
 
-  // =========================
-  // MODO "NUEVO PASEO"
-  // =========================
+  // ---------- Render: nuevo paseo ----------
   if (isNew) {
-    const preselectedWalkerName = location.state?.walkerName;
-    const preselectedWalkerId = location.state?.walkerId;
-
     return (
       <>
         <Header />
@@ -295,15 +274,15 @@ const OwnerWalkDetailPage = () => {
                     para tu mascota.
                   </p>
 
-                  {preselectedWalkerName && (
+                  {preselectedWalker && (
                     <p>
-                      <strong>Paseador seleccionado:</strong>{" "}
-                      {preselectedWalkerName} (ID {preselectedWalkerId})
+                      <strong>Paseador seleccionado:</strong> {preselectedWalker}{" "}
+                      (ID {preselectedWalkerId})
                     </p>
                   )}
 
                   <Form onSubmit={onNewWalkSubmit}>
-                    <FormGroup className="mb-2">
+                    <Form.Group className="mb-2">
                       <Form.Label>Mascota</Form.Label>
                       <FormControl
                         as="select"
@@ -322,11 +301,11 @@ const OwnerWalkDetailPage = () => {
                           </option>
                         ))}
                       </FormControl>
-                    </FormGroup>
+                    </Form.Group>
 
                     <Row>
                       <Col md={6}>
-                        <FormGroup className="mb-2">
+                        <Form.Group className="mb-2">
                           <Form.Label>Fecha</Form.Label>
                           <FormControl
                             type="date"
@@ -334,10 +313,10 @@ const OwnerWalkDetailPage = () => {
                             onChange={(e) => setDate(e.target.value)}
                             required
                           />
-                        </FormGroup>
+                        </Form.Group>
                       </Col>
                       <Col md={6}>
-                        <FormGroup className="mb-2">
+                        <Form.Group className="mb-2">
                           <Form.Label>Hora</Form.Label>
                           <FormControl
                             type="time"
@@ -345,11 +324,11 @@ const OwnerWalkDetailPage = () => {
                             onChange={(e) => setTime(e.target.value)}
                             required
                           />
-                        </FormGroup>
+                        </Form.Group>
                       </Col>
                     </Row>
 
-                    <FormGroup className="mb-2">
+                    <Form.Group className="mb-2">
                       <Form.Label>Duración (minutos)</Form.Label>
                       <FormControl
                         type="number"
@@ -359,9 +338,9 @@ const OwnerWalkDetailPage = () => {
                         onChange={(e) => setDurationMinutes(e.target.value)}
                         required
                       />
-                    </FormGroup>
+                    </Form.Group>
 
-                    <FormGroup className="mb-2">
+                    <Form.Group className="mb-2">
                       <Form.Label>Notas para el paseador</Form.Label>
                       <FormControl
                         as="textarea"
@@ -370,7 +349,7 @@ const OwnerWalkDetailPage = () => {
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="Alérgico, agresivo, miedoso, etc."
                       />
-                    </FormGroup>
+                    </Form.Group>
 
                     <div className="mt-3">
                       <Button
@@ -398,9 +377,7 @@ const OwnerWalkDetailPage = () => {
     );
   }
 
-  // =========================
-  // MODO "DETALLE DE PASEO"
-  // =========================
+  // ---------- Render: detalle ----------
   if (loading) {
     return (
       <>
@@ -473,7 +450,7 @@ const OwnerWalkDetailPage = () => {
                   >
                     {walk.locations.map((loc) => (
                       <ListGroup.Item key={loc.id}>
-                        {formatDate(loc.timestamp)}
+                        {loc.lat}, {loc.lng} - {formatDate(loc.timestamp)}
                       </ListGroup.Item>
                     ))}
                   </ListGroup>
@@ -481,36 +458,13 @@ const OwnerWalkDetailPage = () => {
                   <p>No hay puntos de ubicación registrados aún.</p>
                 )}
 
-                <div className="mt-3">
-                  {walk.status === "REJECTED" && (
-                    <Button
-                      variant="primary"
-                      className="me-2"
-                      onClick={() =>
-                        navigate("/owner/walkers/nearby", {
-                          state: {
-                            fromWalk: {
-                              id: walk.id,
-                              petId: walk.pet?.id ?? walk.petId,
-                              scheduledAt: walk.scheduledAt,
-                              durationMinutes: walk.durationMinutes,
-                              notes: walk.notes
-                            }
-                          }
-                        })
-                      }
-                    >
-                      Elegir otro paseador
-                    </Button>
-                  )}
-
-                  <Button
-                    variant="secondary"
-                    onClick={() => navigate("/owner/walks")}
-                  >
-                    Volver
-                  </Button>
-                </div>
+                <Button
+                  className="mt-3"
+                  variant="secondary"
+                  onClick={() => navigate("/owner/walks")}
+                >
+                  Volver
+                </Button>
               </Card.Body>
             </Card>
           </Col>
@@ -541,7 +495,7 @@ const OwnerWalkDetailPage = () => {
                 <Card.Body>
                   <h5>Dejar review</h5>
                   <Form onSubmit={onReviewSubmit}>
-                    <FormGroup className="mb-2">
+                    <Form.Group className="mb-2">
                       <Form.Label>Puntuación (1 a 5)</Form.Label>
                       <FormControl
                         as="select"
@@ -554,8 +508,8 @@ const OwnerWalkDetailPage = () => {
                         <option value="4">4</option>
                         <option value="5">5</option>
                       </FormControl>
-                    </FormGroup>
-                    <FormGroup>
+                    </Form.Group>
+                    <Form.Group>
                       <Form.Label>Comentario</Form.Label>
                       <FormControl
                         as="textarea"
@@ -563,7 +517,7 @@ const OwnerWalkDetailPage = () => {
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                       />
-                    </FormGroup>
+                    </Form.Group>
                     <Button
                       className="mt-2"
                       type="submit"

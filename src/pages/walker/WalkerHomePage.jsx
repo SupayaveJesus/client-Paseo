@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+// src/pages/walker/WalkerHomePage.jsx
+import { useState } from "react";
 import { Alert, Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import useAuthentication from "../../hooks/useAuthentication";
-import { setAvailability, sendLocation } from "../../service/walkerService";
-
-const STORAGE_KEY = "walker_available";
+import { setAvailability } from "../../service/walkerService";
+import { WALKER_AVAILABILITY_STORAGE_KEY } from "../../hooks/useWalkerAutoLocation";
 
 const WalkerHomePage = () => {
   useAuthentication(true, "walker");
@@ -13,15 +13,14 @@ const WalkerHomePage = () => {
   const navigate = useNavigate();
 
   const [available, setAvailable] = useState(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === "true"; 
+    const stored = localStorage.getItem(WALKER_AVAILABILITY_STORAGE_KEY);
+    return stored === "true";
   });
 
   const [loading, setLoading] = useState(false);
 
   const [message, setMessage] = useState("");
   const [messageVariant, setMessageVariant] = useState("info");
-  const [sendingLocation, setSendingLocation] = useState(false);
 
   const onToggleAvailability = () => {
     const newState = !available;
@@ -31,13 +30,16 @@ const WalkerHomePage = () => {
     setAvailability(newState)
       .then(() => {
         setAvailable(newState);
-        localStorage.setItem(STORAGE_KEY, String(newState)); // 🔹 persistir
+        localStorage.setItem(
+          WALKER_AVAILABILITY_STORAGE_KEY,
+          String(newState)
+        );
 
         setMessageVariant("success");
         setMessage(
           newState
-            ? "Disponibilidad encendida. Empezaremos a enviar tu ubicación periódicamente."
-            : "Disponibilidad apagada. Se detuvo el envío de ubicación."
+            ? "Disponibilidad encendida. Se enviará tu ubicación periódicamente."
+            : "Disponibilidad apagada. Se detendrá el envío de ubicación."
         );
       })
       .catch((err) => {
@@ -47,65 +49,6 @@ const WalkerHomePage = () => {
       })
       .finally(() => setLoading(false));
   };
-
-  useEffect(() => {
-    if (!available) {
-      setSendingLocation(false);
-      return;
-    }
-
-    if (!("geolocation" in navigator)) {
-      setMessageVariant("danger");
-      setMessage("Ubicación: tu navegador no soporta geolocalización.");
-      return;
-    }
-
-    let cancelled = false;
-
-    const sendCurrentLocation = () => {
-      setSendingLocation(true);
-
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          if (cancelled) return;
-
-          const { latitude, longitude } = pos.coords;
-          try {
-            await sendLocation(latitude, longitude);
-            setMessageVariant("success");
-            setMessage("Ubicación enviada correctamente al servidor.");
-          } catch (err) {
-            console.error(err);
-            setMessageVariant("danger");
-            setMessage("Error al enviar la ubicación al servidor.");
-          } finally {
-            if (!cancelled) setSendingLocation(false);
-          }
-        },
-        (err) => {
-          if (cancelled) return;
-          console.error(err);
-          setMessageVariant("danger");
-          setMessage(
-            "No se pudo obtener tu ubicación (revisa permisos de GPS)."
-          );
-          setSendingLocation(false);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000
-        }
-      );
-    };
-
-    sendCurrentLocation();
-    const intervalId = setInterval(sendCurrentLocation, 3 * 60 * 1000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(intervalId);
-    };
-  }, [available]);
 
   return (
     <>
@@ -163,9 +106,6 @@ const WalkerHomePage = () => {
                     onClose={() => setMessage("")}
                   >
                     {message}
-                    {available && sendingLocation && (
-                      <span> (enviando ubicación...)</span>
-                    )}
                   </Alert>
                 )}
               </Card.Body>

@@ -2,18 +2,29 @@
 import { Container, Navbar, Nav } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import useAuthentication from "../hooks/useAuthentication";
+import useWalkerAutoLocation, {
+  WALKER_AVAILABILITY_STORAGE_KEY
+} from "../hooks/useWalkerAutoLocation";
 
 const Header = () => {
   const { role, user, logout } = useAuthentication(false);
 
-  const isLogged = !!role; 
+  const isLogged = !!role;
 
   const homePath =
     role === "owner"
       ? "/owner/home"
       : role === "walker"
-      ? "/walker/home"
-      : "/login-owner";
+        ? "/walker/home"
+        : "/login-owner";
+
+  // 🔥 Activar envío automático de ubicación PARA PASEADOR
+  const walkerAvailable =
+    role === "walker" &&
+    localStorage.getItem(WALKER_AVAILABILITY_STORAGE_KEY) === "true";
+
+  // No necesitamos mensajes aquí, solo que funcione en segundo plano
+  useWalkerAutoLocation(walkerAvailable);
 
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
