@@ -9,20 +9,11 @@ import {
     getUserData
 } from "../utils/TokenUtilities";
 
-/**
- * requireAuth:
- *  - true  => la página requiere sesión (home, mascotas, etc.)
- *  - false => páginas públicas (login, register)
- *
- * role:
- *  - "owner"  => dueño
- *  - "walker" => paseador
- */
+
 const useAuthentication = (requireAuth = true, role = "owner") => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
 
-    // Proteger rutas (cuando requireAuth = true)
     useEffect(() => {
         if (requireAuth) {
             if (!isAuthenticated()) {
@@ -42,7 +33,6 @@ const useAuthentication = (requireAuth = true, role = "owner") => {
 
         return loginFn(loginData)
             .then((data) => {
-                // Guardar token + rol + user en storage
                 if (role === "walker") {
                     saveSession(data.token, "walker", data.walker);
                     navigate("/walker/home");

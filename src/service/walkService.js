@@ -8,11 +8,7 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${getAccessToken()}`
 });
 
-// ======================================
-// PASEOS DEL DUEÑO
-// ======================================
 
-// GET /walks  (lista de paseos del dueño)
 const getOwnerWalks = () => {
   return new Promise((resolve, reject) => {
     axios
@@ -27,7 +23,6 @@ const getOwnerWalks = () => {
   });
 };
 
-// GET /walks/:id  (detalle + locations)
 const getWalkDetail = (id) => {
   return new Promise((resolve, reject) => {
     axios
@@ -42,7 +37,6 @@ const getWalkDetail = (id) => {
   });
 };
 
-// GET /walks/:id/photos  (fotos del paseo)
 const getWalkPhotos = (id) => {
   return new Promise((resolve, reject) => {
     axios
@@ -57,7 +51,6 @@ const getWalkPhotos = (id) => {
   });
 };
 
-// POST /walks  (crear paseo nuevo)
 const createWalk = (walkData) => {
   return new Promise((resolve, reject) => {
     axios
@@ -75,7 +68,6 @@ const createWalk = (walkData) => {
   });
 };
 
-// POST /walks/:id/review  (review del dueño al paseador)
 const leaveReview = (id, reviewData) => {
   return new Promise((resolve, reject) => {
     axios

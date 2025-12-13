@@ -1,3 +1,4 @@
+// src/pages/owner/walks/OwnerWalkDetailPage.jsx
 import { useEffect, useState } from "react";
 import {
   Button,
@@ -43,7 +44,8 @@ const WalkRouteMap = ({ locations }) => {
   if (!GOOGLE_MAPS_API_KEY) {
     return (
       <Alert variant="warning" className="mt-2">
-        Para ver el mapa del recorrido configura <code>VITE_GOOGLE_MAPS_API_KEY</code>.
+        Para ver el mapa del recorrido configura{" "}
+        <code>VITE_GOOGLE_MAPS_API_KEY</code>.
       </Alert>
     );
   }
@@ -106,6 +108,9 @@ const OwnerWalkDetailPage = () => {
   const location = useLocation();
   const isNew = id === "new" || !id;
 
+  // viene desde un paseo rechazado
+  const fromWalk = location.state?.fromWalk || null;
+
   const [loading, setLoading] = useState(!isNew);
   const [walk, setWalk] = useState(null);
   const [photos, setPhotos] = useState([]);
@@ -127,10 +132,9 @@ const OwnerWalkDetailPage = () => {
   const [comment, setComment] = useState("");
   const [loadingReview, setLoadingReview] = useState(false);
 
-  // info del paseador seleccionado (cuando vienes desde /owner/walkers/:id)
-  const preselectedWalker = location.state?.walkerName;
-  const preselectedWalkerId = location.state?.walkerId;
-
+  // =========================
+  // CARGA INICIAL
+  // =========================
   useEffect(() => {
     if (isNew) {
       setLoading(false);
@@ -140,8 +144,35 @@ const OwnerWalkDetailPage = () => {
       getPets()
         .then((data) => {
           setPets(data);
+
           if (data.length > 0) {
-            setPetId(String(data[0].id));
+            // si venimos de un paseo rechazado, usamos esa mascota
+            if (fromWalk?.petId) {
+              setPetId(String(fromWalk.petId));
+            } else {
+              setPetId(String(data[0].id));
+            }
+          }
+
+          // pre-rellenar fecha/hora si venimos de REJECTED
+          if (fromWalk?.scheduledAt) {
+            const d = new Date(fromWalk.scheduledAt);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            const hh = String(d.getHours()).padStart(2, "0");
+            const mi = String(d.getMinutes()).padStart(2, "0");
+
+            setDate(`${yyyy}-${mm}-${dd}`);
+            setTime(`${hh}:${mi}`);
+          }
+
+          if (typeof fromWalk?.durationMinutes === "number") {
+            setDurationMinutes(fromWalk.durationMinutes);
+          }
+
+          if (fromWalk?.notes) {
+            setNotes(fromWalk.notes);
           }
         })
         .catch((error) => {
@@ -165,8 +196,11 @@ const OwnerWalkDetailPage = () => {
         setMessage("Error al cargar detalles del paseo");
       })
       .finally(() => setLoading(false));
-  }, [id, isNew]);
+  }, [id, isNew, fromWalk]);
 
+  // =========================
+  // CREAR NUEVO PASEO
+  // =========================
   const onNewWalkSubmit = (event) => {
     event.preventDefault();
 
@@ -186,6 +220,7 @@ const OwnerWalkDetailPage = () => {
     };
 
     // si venimos con paseador preseleccionado, lo mandamos
+    const preselectedWalkerId = location.state?.walkerId;
     if (preselectedWalkerId) {
       payload.walkerId = preselectedWalkerId;
     }
@@ -233,6 +268,9 @@ const OwnerWalkDetailPage = () => {
   // MODO "NUEVO PASEO"
   // =========================
   if (isNew) {
+    const preselectedWalkerName = location.state?.walkerName;
+    const preselectedWalkerId = location.state?.walkerId;
+
     return (
       <>
         <Header />
@@ -257,10 +295,10 @@ const OwnerWalkDetailPage = () => {
                     para tu mascota.
                   </p>
 
-                  {preselectedWalker && (
+                  {preselectedWalkerName && (
                     <p>
-                      <strong>Paseador seleccionado:</strong> {preselectedWalker}{" "}
-                      (ID {preselectedWalkerId})
+                      <strong>Paseador seleccionado:</strong>{" "}
+                      {preselectedWalkerName} (ID {preselectedWalkerId})
                     </p>
                   )}
 
@@ -427,17 +465,15 @@ const OwnerWalkDetailPage = () => {
 
                 <h5 className="mt-3">Recorrido</h5>
 
-                {/* Mapa del recorrido */}
                 <WalkRouteMap locations={walk.locations} />
 
-                {/* Lista de puntos */}
                 {walk.locations && walk.locations.length > 0 ? (
                   <ListGroup
                     style={{ maxHeight: "200px", overflowY: "auto" }}
                   >
                     {walk.locations.map((loc) => (
                       <ListGroup.Item key={loc.id}>
-                        {loc.lat}, {loc.lng} - {formatDate(loc.timestamp)}
+                        {formatDate(loc.timestamp)}
                       </ListGroup.Item>
                     ))}
                   </ListGroup>
@@ -445,13 +481,36 @@ const OwnerWalkDetailPage = () => {
                   <p>No hay puntos de ubicación registrados aún.</p>
                 )}
 
-                <Button
-                  className="mt-3"
-                  variant="secondary"
-                  onClick={() => navigate("/owner/walks")}
-                >
-                  Volver
-                </Button>
+                <div className="mt-3">
+                  {walk.status === "REJECTED" && (
+                    <Button
+                      variant="primary"
+                      className="me-2"
+                      onClick={() =>
+                        navigate("/owner/walkers/nearby", {
+                          state: {
+                            fromWalk: {
+                              id: walk.id,
+                              petId: walk.pet?.id ?? walk.petId,
+                              scheduledAt: walk.scheduledAt,
+                              durationMinutes: walk.durationMinutes,
+                              notes: walk.notes
+                            }
+                          }
+                        })
+                      }
+                    >
+                      Elegir otro paseador
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate("/owner/walks")}
+                  >
+                    Volver
+                  </Button>
+                </div>
               </Card.Body>
             </Card>
           </Col>

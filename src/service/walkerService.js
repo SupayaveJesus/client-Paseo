@@ -8,11 +8,7 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${getAccessToken()}`
 });
 
-// ======================================
-// DISPONIBILIDAD Y UBICACIÓN
-// ======================================
 
-// POST /walkers/availability  { isAvailable: true|false }
 const setAvailability = (isAvailable) => {
   return new Promise((resolve, reject) => {
     axios
@@ -34,7 +30,6 @@ const setAvailability = (isAvailable) => {
   });
 };
 
-// POST /walkers/location  { lat, lng }
 const sendLocation = (lat, lng) => {
   return new Promise((resolve, reject) => {
     axios
@@ -56,11 +51,7 @@ const sendLocation = (lat, lng) => {
   });
 };
 
-// ======================================
-// PASEOS DEL PASEADOR
-// ======================================
 
-// GET /walks/pending
 const getPendingWalks = () => {
   return new Promise((resolve, reject) => {
     axios
@@ -75,7 +66,6 @@ const getPendingWalks = () => {
   });
 };
 
-// GET /walks/accepted
 const getAcceptedWalks = () => {
   return new Promise((resolve, reject) => {
     axios
@@ -90,7 +80,6 @@ const getAcceptedWalks = () => {
   });
 };
 
-// GET /walks/history  (historial del paseador)
 const getHistoryWalks = () => {
   return new Promise((resolve, reject) => {
     axios
@@ -105,7 +94,6 @@ const getHistoryWalks = () => {
   });
 };
 
-// POST /walks/:id/accept
 const acceptWalk = (id) => {
   return new Promise((resolve, reject) => {
     axios
@@ -122,7 +110,6 @@ const acceptWalk = (id) => {
   });
 };
 
-// POST /walks/:id/reject
 const rejectWalk = (id) => {
   return new Promise((resolve, reject) => {
     axios
@@ -139,7 +126,6 @@ const rejectWalk = (id) => {
   });
 };
 
-// POST /walks/:id/start
 const startWalk = (id) => {
   return new Promise((resolve, reject) => {
     axios
@@ -156,7 +142,6 @@ const startWalk = (id) => {
   });
 };
 
-// POST /walks/:id/end
 const endWalk = (id) => {
   return new Promise((resolve, reject) => {
     axios
@@ -173,7 +158,6 @@ const endWalk = (id) => {
   });
 };
 
-// POST /walks/:id/photo   (subir foto del paseo)
 const uploadWalkPhoto = (id, file) => {
   return new Promise((resolve, reject) => {
     const formData = new FormData();
@@ -194,7 +178,6 @@ const uploadWalkPhoto = (id, file) => {
   });
 };
 
-// GET /walks/walker/:id  (detalle de paseo para paseador)
 const getWalkerWalkDetail = (id) => {
   return new Promise((resolve, reject) => {
     axios
@@ -209,11 +192,7 @@ const getWalkerWalkDetail = (id) => {
   });
 };
 
-// ======================================
-// DETALLE DE PASEADOR (para el dueño)
-// ======================================
 
-// GET /walkers/:id
 const getWalkerById = (id) => {
   return new Promise((resolve, reject) => {
     axios

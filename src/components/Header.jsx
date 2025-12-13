@@ -4,12 +4,10 @@ import { Link } from "react-router-dom";
 import useAuthentication from "../hooks/useAuthentication";
 
 const Header = () => {
-  // requireAuth = false → NO redirige, solo lee info de sesión
   const { role, user, logout } = useAuthentication(false);
 
-  const isLogged = !!role; // hay sesión si tenemos rol guardado
+  const isLogged = !!role; 
 
-  // Ruta de inicio según rol
   const homePath =
     role === "owner"
       ? "/owner/home"
@@ -20,7 +18,6 @@ const Header = () => {
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
       <Container>
-        {/* Logo / título que te lleva al home según rol */}
         <Navbar.Brand as={Link} to={homePath}>
           App Paseo de Mascotas
         </Navbar.Brand>

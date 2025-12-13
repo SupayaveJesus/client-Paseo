@@ -7,7 +7,6 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${getAccessToken()}`
 });
 
-// LISTAR MASCOTAS DEL DUEÑO → GET /pets
 const getPets = () => {
   return new Promise((resolve, reject) => {
     axios
@@ -22,7 +21,6 @@ const getPets = () => {
   });
 };
 
-// CREAR MASCOTA → POST /pets
 const createPet = (petData) => {
   return new Promise((resolve, reject) => {
     axios
@@ -40,7 +38,6 @@ const createPet = (petData) => {
   });
 };
 
-// ACTUALIZAR MASCOTA → PUT /pets/:id
 const updatePet = (id, petData) => {
   return new Promise((resolve, reject) => {
     axios
@@ -58,7 +55,6 @@ const updatePet = (id, petData) => {
   });
 };
 
-// ELIMINAR MASCOTA → DELETE /pets/:id
 const deletePet = (id) => {
   return new Promise((resolve, reject) => {
     axios
@@ -73,7 +69,6 @@ const deletePet = (id) => {
   });
 };
 
-// SUBIR FOTO → POST /pets/:id/photo
 const uploadPetPhoto = (id, file) => {
   return new Promise((resolve, reject) => {
     const formData = new FormData();

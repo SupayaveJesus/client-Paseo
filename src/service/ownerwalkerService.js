@@ -8,7 +8,6 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${getAccessToken()}`
 });
 
-// POST /walkers/nearby  { lat, lng }
 const findNearbyWalkers = (lat, lng) => {
   return new Promise((resolve, reject) => {
     axios.post(
@@ -29,7 +28,6 @@ const findNearbyWalkers = (lat, lng) => {
   });
 };
 
-// GET /walkers/:id
 const getWalkerDetailForOwner = (id) => {
   return new Promise((resolve, reject) => {
     axios.get(`${BASE_URL}/walkers/${id}`, {

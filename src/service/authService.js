@@ -2,7 +2,6 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:3000";
 
-// LOGIN OWNER  -> POST /auth/clientlogin
 const loginOwner = (loginData) => {
     return new Promise((resolve, reject) => {
         axios.post(`${BASE_URL}/auth/clientlogin`, loginData)
@@ -16,7 +15,6 @@ const loginOwner = (loginData) => {
     });
 };
 
-// LOGIN WALKER -> POST /auth/walkerlogin
 const loginWalker = (loginData) => {
     return new Promise((resolve, reject) => {
         axios.post(`${BASE_URL}/auth/walkerlogin`, loginData)
@@ -30,7 +28,6 @@ const loginWalker = (loginData) => {
     });
 };
 
-// REGISTER OWNER -> POST /auth/clientregister
 const registerOwner = (data) => {
     return new Promise((resolve, reject) => {
         const formData = new FormData();
@@ -54,7 +51,6 @@ const registerOwner = (data) => {
     });
 };
 
-// REGISTER WALKER -> POST /auth/walkerregister
 const registerWalker = (data) => {
     return new Promise((resolve, reject) => {
         const formData = new FormData();

@@ -3,17 +3,14 @@ import { setAccessToken, getAccessToken, removeAccessToken, getUserFromToken, ge
 import { clientLogin, clientRegister, walkerLogin, walkerRegister } from "../service/authService";
 
 
-// Contexto
 const AuthContext = createContext(null);
 
-// Provider
 const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(getAccessToken() || null);
   const [user, setUser] = useState(getUserFromToken());
   const [role, setRole] = useState(getUserRole()); // "owner" | "walker" | null
   const [loading, setLoading] = useState(false);
 
-  // Cuando cambie el token en localStorage (por ejemplo al recargar)
   useEffect(() => {
     const storedToken = getAccessToken();
     if (storedToken && !token) {
@@ -22,17 +19,14 @@ const AuthProvider = ({ children }) => {
       setUser(payload);
       setRole(payload?.type || null);
     }
-  }, []); // solo al montar
+  }, []); 
 
-  // =========================
-  //  LOGIN / REGISTER
-  // =========================
 
   const loginOwner = (loginData) => {
     setLoading(true);
     return clientLogin(loginData)
       .then((data) => {
-        // data.token viene del backend
+
         setAccessToken(data.token);
         const payload = getUserFromToken();
 
@@ -69,9 +63,6 @@ const AuthProvider = ({ children }) => {
       });
   };
 
-  // El requerimiento dice que después del register
-  // se vuelve a la pantalla de login, así que aquí
-  // NO guardamos token, solo llamamos a la API.
   const registerOwner = (registerData) => {
     return clientRegister(registerData);
   };
@@ -90,11 +81,10 @@ const AuthProvider = ({ children }) => {
   const value = {
     token,
     user,
-    role,            // "owner" o "walker"
+    role,            
     loading,
     isAuthenticated: !!token,
 
-    // acciones
     loginOwner,
     loginWalker,
     registerOwner,

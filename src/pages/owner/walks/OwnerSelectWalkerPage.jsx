@@ -9,7 +9,7 @@ import {
   Row,
   Table
 } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../../../components/Header";
 import useAuthentication from "../../../hooks/useAuthentication";
 import { findNearbyWalkers } from "../../../service/ownerWalkerService";
@@ -17,6 +17,9 @@ import { findNearbyWalkers } from "../../../service/ownerWalkerService";
 const OwnerSelectWalkerPage = () => {
   useAuthentication(true, "owner");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const fromWalk = location.state?.fromWalk || null;
 
   const [walkers, setWalkers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -62,7 +65,7 @@ const OwnerSelectWalkerPage = () => {
         console.error(err);
         setVariant("warning");
         setMessage(
-          "No se pudo obtener tu ubicación (permiso denegado o timeout). Se usará una ubicación por defecto."
+          "No se pudo obtener tu ubicación. Se usará una ubicación por defecto."
         );
         fetchNearby(-17.7833, -63.1833);
       },
@@ -86,7 +89,7 @@ const OwnerSelectWalkerPage = () => {
               <Card.Body>
                 <h2>Elegir paseador cercano</h2>
                 <p>
-                  Usaremos tu ubicación para mostrar paseadores cercanos que
+                  Usamos tu ubicación para mostrar paseadores cercanos que
                   están trabajando. Luego podrás ver su detalle y solicitar un paseo.
                 </p>
 
@@ -132,7 +135,7 @@ const OwnerSelectWalkerPage = () => {
                             variant="primary"
                             onClick={() =>
                               navigate(`/owner/walkers/${w.id}`, {
-                                state: { walker: w }
+                                state: { walker: w, fromWalk }
                               })
                             }
                           >

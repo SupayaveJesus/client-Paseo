@@ -1,4 +1,3 @@
-// src/service/reviewService.js
 import axios from "axios";
 import { getAccessToken } from "../utils/TokenUtilities";
 
@@ -8,7 +7,6 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${getAccessToken()}`
 });
 
-// GET /reviews   (reviews del walker logueado)
 const getMyReviews = () => {
   return new Promise((resolve, reject) => {
     axios.get(`${BASE_URL}/reviews`, {
@@ -22,7 +20,6 @@ const getMyReviews = () => {
   });
 };
 
-// GET /reviews/:id
 const getReviewById = (id) => {
   return new Promise((resolve, reject) => {
     axios.get(`${BASE_URL}/reviews/${id}`, {
