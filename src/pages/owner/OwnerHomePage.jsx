@@ -1,42 +1,84 @@
-import { Container, Row, Col, Card, Button } from "react-bootstrap";
+// src/pages/owner/OwnerHomePage.jsx
+import { Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import useAuthentication from "../../hooks/useAuthentication";
+import "./OwnerHomePage.css"; 
+
+import { FaDog, FaCat, FaRoute, FaPaw, FaStar } from "react-icons/fa";
 
 const OwnerHomePage = () => {
-  useAuthentication(true, "owner"); 
+  useAuthentication(true, "owner");
   const navigate = useNavigate();
 
   return (
     <>
       <Header />
-      <Container className="mt-3">
-        <Row>
-          <Col md={6} xl={4}>
-            <Card>
-              <Card.Body>
-                <h2>Inicio - Dueño</h2>
-                <p>Bienvenido a tu panel de dueño de mascota.</p>
-                <div className="mt-3">
-                  <Button
-                    variant="primary"
-                    onClick={() => navigate("/owner/pets")}
-                  >
-                    Mis mascotas
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    className="ms-2"
-                    onClick={() => navigate("/owner/walks")}
-                  >
-                    Paseos
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+      <div className="owner-home-wrapper">
+        <Container className="owner-home-container">
+          <div className="owner-home-card">
+            <div className="owner-home-left">
+              <div className="owner-home-chip">Panel del dueño</div>
+
+              <h1 className="owner-home-title">
+                Cuida a tus <span>mascotas</span> sin complicarte.
+              </h1>
+
+              <p className="owner-home-subtitle">
+                Administra tus mascotas y programa paseos en pocos pasos.
+              </p>
+
+              <div className="owner-home-actions">
+                <button
+                  type="button"
+                  className="btn-pill btn-primary-pill"
+                  onClick={() => navigate("/owner/pets")}
+                >
+                  <FaDog className="me-2" />
+                  Mis mascotas
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-pill btn-secondary-pill"
+                  onClick={() => navigate("/owner/walks")}
+                >
+                  <FaRoute className="me-2" />
+                  Ver paseos
+                </button>
+              </div>
+
+              <div className="owner-home-tags">
+                <span className="owner-home-tag">
+                  <FaPaw className="me-2" />
+                  Perros y gatos
+                </span>
+                <span className="owner-home-tag">
+                  <FaRoute className="me-2" />
+                  Seguimiento en mapa
+                </span>
+                <span className="owner-home-tag">
+                  <FaStar className="me-2" />
+                  Reviews de paseadores
+                </span>
+              </div>
+            </div>
+
+            {/* Lado derecho con iconos grandes */}
+            <div className="owner-home-right">
+              <div className="owner-hero-circle owner-hero-main">
+                <FaDog />
+              </div>
+              <div className="owner-hero-circle owner-hero-small owner-hero-top">
+                <FaCat />
+              </div>
+              <div className="owner-hero-circle owner-hero-small owner-hero-bottom">
+                <FaPaw />
+              </div>
+            </div>
+          </div>
+        </Container>
+      </div>
     </>
   );
 };

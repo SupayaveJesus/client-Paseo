@@ -1,0 +1,230 @@
+/* ===========================
+   🎨 Fondo general Owner Home
+=========================== */
+.owner-home-wrapper {
+  min-height: calc(100vh - 56px); /* 56px ≈ altura del navbar */
+  background: radial-gradient(
+    circle at top left,
+    #ffe5d0 0,
+    #fff6f0 38%,
+    #f7f8ff 100%
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 16px;
+}
+
+.owner-home-container {
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* ===========================
+   🧩 Card principal
+=========================== */
+.owner-home-card {
+  background: linear-gradient(90deg, #ffc2a2 0%, #ff9bb7 50%, #f3e5ff 100%);
+  border-radius: 24px;
+  padding: 28px 34px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  color: #1b1b33;
+}
+
+.owner-home-left {
+  flex: 1.2;
+}
+
+.owner-home-right {
+  flex: 0.9;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===========================
+   🔖 Chip superior
+=========================== */
+.owner-home-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+/* ===========================
+   📝 Títulos y texto
+=========================== */
+.owner-home-title {
+  margin-top: 0.75rem;
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.owner-home-title span {
+  color: #1446f5;
+  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.owner-home-subtitle {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  max-width: 380px;
+  color: #111827;
+}
+
+/* ===========================
+   🔘 Botones pill
+=========================== */
+.owner-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+  margin-bottom: 12px;
+}
+
+.btn-pill {
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease,
+    background 0.15s ease, color 0.15s ease;
+}
+
+.btn-pill svg {
+  margin-right: 6px;
+}
+
+/* Principal: azul */
+.btn-primary-pill {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
+}
+
+.btn-primary-pill:hover {
+  background: #1d4ed8;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.45);
+  transform: translateY(-1px);
+}
+
+/* Secundario: blanco */
+.btn-secondary-pill {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+}
+
+.btn-secondary-pill:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* ===========================
+   🏷 Chips de features
+=========================== */
+.owner-home-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.owner-home-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #4b5563;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.owner-home-tag svg {
+  margin-right: 6px;
+}
+
+/* ===========================
+   🐶 Círculos de iconos (react-icons)
+=========================== */
+.owner-hero-circle {
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff7b6b;
+}
+
+.owner-hero-main {
+  width: 150px;
+  height: 150px;
+  font-size: 3.4rem; /* tamaño del FaDog */
+}
+
+.owner-hero-small {
+  width: 60px;
+  height: 60px;
+  font-size: 1.6rem;
+  position: absolute;
+}
+
+.owner-hero-top {
+  right: 6px;
+  top: 10px;
+  background: #fee2e2;
+}
+
+.owner-hero-bottom {
+  left: 8px;
+  bottom: 6px;
+  background: #dbeafe;
+}
+
+/* ===========================
+   📱 Responsive
+=========================== */
+@media (max-width: 767.98px) {
+  .owner-home-card {
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: 20px;
+    padding: 22px 20px;
+  }
+
+  .owner-home-title {
+    font-size: 1.6rem;
+  }
+
+  .owner-home-subtitle {
+    max-width: 100%;
+  }
+
+  .owner-home-right {
+    align-self: center;
+    margin-top: 1.4rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .owner-home-wrapper {
+    align-items: center; /* centrado vertical en desktop */
+  }
+}

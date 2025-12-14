@@ -10,6 +10,7 @@ import {
   FormGroup,
   Row
 } from "react-bootstrap";
+import { FaDog, FaSave, FaTimes } from "react-icons/fa";
 import Header from "../../../components/Header";
 import RequiredLabel from "../../../components/RequiredLabel";
 import useAuthentication from "../../../hooks/useAuthentication";
@@ -19,7 +20,7 @@ const FormPet = () => {
   useAuthentication(true, "owner");
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = useParams(); 
+  const { id } = useParams(); // si hay id, es edición
 
   const petFromState = location.state?.pet || null;
   const isEdit = !!id;
@@ -82,18 +83,38 @@ const FormPet = () => {
   return (
     <>
       <Header />
-      <Container>
-        <Row className="mt-2">
-          <Col md={6} xl={4}>
-            <Card>
+      <Container className="app-page">
+        <Row className="justify-content-center">
+          <Col md={6} xl={5}>
+            <Card className="app-card-elevated">
               <Card.Body>
+                <div className="d-flex align-items-center mb-3">
+                  <div className="me-2">
+                    <FaDog size={26} color="#2563eb" />
+                  </div>
+                  <div>
+                    <h2 className="app-section-title mb-0">
+                      {isEdit ? "Editar mascota" : "Nueva mascota"}
+                    </h2>
+                    <small className="text-muted">
+                      Completa los datos básicos de tu peludito.
+                    </small>
+                  </div>
+                </div>
+
+                {message && (
+                  <div className={`alert alert-${messageVariant || "danger"}`}>
+                    {message}
+                  </div>
+                )}
+
                 <Form noValidate validated={validated} onSubmit={onFormSubmit}>
                   <Row>
                     <Col>
-                      <h1>{isEdit ? "Editar mascota" : "Nueva mascota"}</h1>
-
-                      <FormGroup>
-                        <RequiredLabel htmlFor="txtNombre">Nombre</RequiredLabel>
+                      <FormGroup className="mb-3">
+                        <RequiredLabel htmlFor="txtNombre">
+                          Nombre
+                        </RequiredLabel>
                         <FormControl
                           id="txtNombre"
                           required
@@ -107,8 +128,10 @@ const FormPet = () => {
                         </FormControl.Feedback>
                       </FormGroup>
 
-                      <FormGroup>
-                        <RequiredLabel htmlFor="txtTipo">Tipo</RequiredLabel>
+                      <FormGroup className="mb-3">
+                        <RequiredLabel htmlFor="txtTipo">
+                          Tipo
+                        </RequiredLabel>
                         <FormControl
                           id="txtTipo"
                           required
@@ -123,7 +146,7 @@ const FormPet = () => {
                         </FormControl.Feedback>
                       </FormGroup>
 
-                      <FormGroup>
+                      <FormGroup className="mb-3">
                         <Form.Label htmlFor="txtNotas">Notas</Form.Label>
                         <FormControl
                           as="textarea"
@@ -131,19 +154,23 @@ const FormPet = () => {
                           rows={3}
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}
+                          placeholder="Alérgico, juguetón, no le gustan otros perros, etc."
                         />
                       </FormGroup>
                     </Col>
                   </Row>
-                  <div className="mt-2">
-                    <Button variant="primary" type="submit">
+
+                  <div className="mt-3 d-flex">
+                    <Button className="btn-pill-primary" type="submit">
+                      <FaSave className="me-2" />
                       Guardar
                     </Button>
                     <Button
-                      variant="secondary"
+                      variant="outline-secondary"
                       className="ms-2"
                       onClick={onCancelClick}
                     >
+                      <FaTimes className="me-1" />
                       Cancelar
                     </Button>
                   </div>

@@ -9,6 +9,7 @@ import {
   Image
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { FaPaw, FaEdit, FaTrashAlt, FaImage } from "react-icons/fa"; 
 import Header from "../../../components/Header";
 import useAuthentication from "../../../hooks/useAuthentication";
 import { getPets, deletePet } from "../../../service/petService";
@@ -20,7 +21,7 @@ const ListPets = () => {
 
   const [message, setMessage] = useState("");
   const [messageVariant, setMessageVariant] = useState("");
-  
+
   const loadPets = () => {
     getPets()
       .then((data) => setPets(data))
@@ -49,14 +50,23 @@ const ListPets = () => {
   };
 
   const renderPhoto = (pet) => {
-    if (!pet.photoUrl) return "Sin foto";
     const base = "http://localhost:3000";
+
+    if (!pet.photoUrl) {
+      return (
+        <div className="pet-avatar-placeholder">
+          <FaPaw />
+        </div>
+      );
+    }
+
     return (
       <Image
         src={`${base}/uploads/pets/${pet.photoUrl}`}
         roundedCircle
         width={48}
         height={48}
+        alt={pet.name}
       />
     );
   };
@@ -64,24 +74,25 @@ const ListPets = () => {
   return (
     <>
       <Header />
-      <Container className="mt-3">
+      <Container className="app-page">
         <Row>
           <Col>
-            <Card>
+            <Card className="app-card-elevated">
               <Card.Body>
-                <div className="d-flex justify-content-between align-items-center">
-                  <h2>Mis Mascotas</h2>
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <h2 className="app-section-title">Mis mascotas</h2>
                   <Button
-                    variant="primary"
+                    className="btn-pill-primary"
                     onClick={() =>
                       navigate("/owner/pets/create", { state: { pet: null } })
                     }
                   >
+                    <FaPaw className="me-2" />
                     Agregar mascota
                   </Button>
                 </div>
 
-                <Table striped bordered hover className="mt-3">
+                <Table responsive hover className="app-table">
                   <thead>
                     <tr>
                       <th>Foto</th>
@@ -98,7 +109,7 @@ const ListPets = () => {
                         <td>{pet.name}</td>
                         <td>{pet.type}</td>
                         <td>{pet.notes}</td>
-                        <td>
+                        <td className="app-actions-cell">
                           <Button
                             size="sm"
                             variant="warning"
@@ -108,26 +119,27 @@ const ListPets = () => {
                               })
                             }
                           >
+                            <FaEdit className="me-1" />
                             Editar
                           </Button>
                           <Button
                             size="sm"
                             variant="info"
-                            className="ms-2"
                             onClick={() =>
                               navigate(`/owner/pets/${pet.id}/photo`, {
                                 state: { pet }
                               })
                             }
                           >
+                            <FaImage className="me-1" />
                             Foto
                           </Button>
                           <Button
                             size="sm"
                             variant="danger"
-                            className="ms-2"
                             onClick={() => onDeleteClick(pet.id)}
                           >
+                            <FaTrashAlt className="me-1" />
                             Eliminar
                           </Button>
                         </td>
@@ -135,8 +147,8 @@ const ListPets = () => {
                     ))}
                     {pets.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="text-center">
-                          No tienes mascotas registradas
+                        <td colSpan={5} className="text-center py-4">
+                          No tienes mascotas registradas.
                         </td>
                       </tr>
                     )}

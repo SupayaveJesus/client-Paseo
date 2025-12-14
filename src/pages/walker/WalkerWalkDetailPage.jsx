@@ -9,6 +9,7 @@ import {
   FormControl,
   Row,
   Alert,
+  Badge,
 } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/Header";
@@ -19,11 +20,32 @@ import {
   endWalk,
   uploadWalkPhoto,
 } from "../../service/walkerService";
+import { FaClock, FaPaw, FaStickyNote, FaPlay, FaStop } from "react-icons/fa";
 
 const formatDate = (isoString) => {
   if (!isoString) return "";
   const d = new Date(isoString);
   return d.toLocaleString();
+};
+
+const statusToBadge = (status) => {
+  const map = {
+    PENDING: "warning",
+    ACCEPTED: "info",
+    IN_PROGRESS: "primary",
+    FINISHED: "success",
+    REJECTED: "danger",
+  };
+
+  const labelMap = {
+    PENDING: "PENDIENTE",
+    ACCEPTED: "ACEPTADO",
+    IN_PROGRESS: "EN CURSO",
+    FINISHED: "FINALIZADO",
+    REJECTED: "RECHAZADO",
+  };
+
+  return <Badge bg={map[status] || "secondary"}>{labelMap[status] || status}</Badge>;
 };
 
 const WalkerWalkDetailPage = () => {
@@ -153,96 +175,118 @@ const WalkerWalkDetailPage = () => {
   return (
     <>
       <Header />
-      <Container className="mt-3">
-        {message && (
-          <Alert
-            variant={messageVariant}
-            onClose={() => setMessage("")}
-            dismissible
-          >
-            {message}
-          </Alert>
-        )}
+      <div className="app-page-wrapper">
+        <Container>
+          {message && (
+            <Alert
+              variant={messageVariant}
+              onClose={() => setMessage("")}
+              dismissible
+              className="mb-3"
+            >
+              {message}
+            </Alert>
+          )}
 
-        <Row>
-          <Col md={8}>
-            <Card>
-              <Card.Body>
-                <h2>Detalle del paseo #{walk.id}</h2>
-                <p>
-                  <strong>Fecha / hora:</strong> {formatDate(walk.scheduledAt)}
-                </p>
-                <p>
-                  <strong>Estado:</strong> {walk.status}
-                </p>
-                <p>
-                  <strong>Mascota:</strong> {walk.pet?.name}
-                </p>
-                <p>
-                  <strong>Notas del dueño:</strong>{" "}
-                  {walk.notes || "Sin notas"}
-                </p>
-
-                <div className="mt-3">
-                  {canStart && (
-                    <Button
-                      variant="success"
-                      className="me-2"
-                      disabled={actionLoading}
-                      onClick={handleStartWalk}
-                    >
-                      {actionLoading ? "Procesando..." : "Iniciar paseo"}
-                    </Button>
-                  )}
-
-                  {canEnd && (
-                    <Button
-                      variant="danger"
-                      className="me-2"
-                      disabled={actionLoading}
-                      onClick={handleEndWalk}
-                    >
-                      {actionLoading ? "Procesando..." : "Finalizar paseo"}
-                    </Button>
-                  )}
-
-                  <Button
-                    variant="secondary"
-                    onClick={() => navigate("/walker/walks")}
-                  >
-                    Volver
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          <Col md={4} className="mt-3 mt-md-0">
-            {canUploadPhoto && (
-              <Card>
+          <Row>
+            <Col md={8}>
+              <Card className="app-card-elevated">
                 <Card.Body>
-                  <h5>Subir foto del paseo</h5>
-                  <Form onSubmit={handlePhotoSubmit}>
-                    <FormControl
-                      type="file"
-                      accept="image/*"
-                      className="mb-2"
-                      onChange={(e) => setPhotoFile(e.target.files[0] || null)}
-                    />
+                  <div className="app-section-eyebrow mb-1">
+                    Paseo asignado
+                  </div>
+                  <h2 className="app-section-title mb-3">
+                    Paseo #{walk.id}
+                  </h2>
+
+                  <p>
+                    <FaClock className="me-2 text-muted" />
+                    <strong>Fecha / hora:</strong> {formatDate(walk.scheduledAt)}
+                  </p>
+                  <p>
+                    <strong>Estado:</strong> {statusToBadge(walk.status)}
+                  </p>
+                  <p>
+                    <FaPaw className="me-2 text-muted" />
+                    <strong>Mascota:</strong> {walk.pet?.name}
+                  </p>
+                  <p>
+                    <FaStickyNote className="me-2 text-muted" />
+                    <strong>Notas del dueño:</strong>{" "}
+                    {walk.notes || "Sin notas"}
+                  </p>
+
+                  <div className="mt-3 d-flex flex-wrap gap-2">
+                    {canStart && (
+                      <Button
+                        variant="success"
+                        className="btn-pill-primary"
+                        disabled={actionLoading}
+                        onClick={handleStartWalk}
+                      >
+                        <FaPlay className="me-2" />
+                        {actionLoading ? "Procesando..." : "Iniciar paseo"}
+                      </Button>
+                    )}
+
+                    {canEnd && (
+                      <Button
+                        variant="danger"
+                        className="btn-pill-secondary"
+                        disabled={actionLoading}
+                        onClick={handleEndWalk}
+                      >
+                        <FaStop className="me-2" />
+                        {actionLoading ? "Procesando..." : "Finalizar paseo"}
+                      </Button>
+                    )}
+
                     <Button
-                      type="submit"
-                      variant="primary"
-                      disabled={uploadingPhoto || !photoFile}
+                      variant="outline-secondary"
+                      className="btn-pill-sm"
+                      onClick={() => navigate("/walker/walks")}
                     >
-                      {uploadingPhoto ? "Subiendo..." : "Subir foto"}
+                      Volver a mis paseos
                     </Button>
-                  </Form>
+                  </div>
                 </Card.Body>
               </Card>
-            )}
-          </Col>
-        </Row>
-      </Container>
+            </Col>
+
+            <Col md={4} className="mt-3 mt-md-0">
+              {canUploadPhoto && (
+                <Card className="app-card-elevated">
+                  <Card.Body>
+                    <h5 className="mb-2">Subir foto del paseo</h5>
+                    <p className="text-muted small">
+                      Sube una o varias fotos para que el dueño vea cómo fue el
+                      paseo.
+                    </p>
+                    <Form onSubmit={handlePhotoSubmit}>
+                      <FormControl
+                        type="file"
+                        accept="image/*"
+                        className="mb-2"
+                        onChange={(e) =>
+                          setPhotoFile(e.target.files[0] || null)
+                        }
+                      />
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        className="btn-pill-primary"
+                        disabled={uploadingPhoto || !photoFile}
+                      >
+                        {uploadingPhoto ? "Subiendo..." : "Subir foto"}
+                      </Button>
+                    </Form>
+                  </Card.Body>
+                </Card>
+              )}
+            </Col>
+          </Row>
+        </Container>
+      </div>
     </>
   );
 };

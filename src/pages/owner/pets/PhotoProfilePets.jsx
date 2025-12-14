@@ -10,6 +10,7 @@ import {
   Row,
   Image
 } from "react-bootstrap";
+import { FaImage, FaUpload, FaArrowLeft } from "react-icons/fa";
 import Header from "../../../components/Header";
 import useAuthentication from "../../../hooks/useAuthentication";
 import { uploadPetPhoto } from "../../../service/petService";
@@ -46,7 +47,7 @@ const PhotoProfilePets = () => {
 
     uploadPetPhoto(id, file)
       .then(() => {
-        setMessageVariant("danger");
+        setMessageVariant("success");
         setMessage("Foto actualizada");
         navigate("/owner/pets");
       })
@@ -65,20 +66,45 @@ const PhotoProfilePets = () => {
   return (
     <>
       <Header />
-      <Container className="mt-3">
-        <Row>
-          <Col md={6} xl={4}>
-            <Card>
+      <Container className="app-page">
+        <Row className="justify-content-center">
+          <Col md={6} xl={5}>
+            <Card className="app-card-elevated">
               <Card.Body>
-                <h2>Foto de mascota</h2>
-                {currentPhotoUrl && (
-                  <div className="mb-3">
-                    <p>Foto actual:</p>
-                    <Image src={currentPhotoUrl} rounded width={120} />
+                <div className="d-flex align-items-center mb-3">
+                  <div className="me-2">
+                    <FaImage size={24} color="#2563eb" />
+                  </div>
+                  <div>
+                    <h2 className="app-section-title mb-0">
+                      Foto de mascota
+                    </h2>
+                    <small className="text-muted">
+                      Sube una foto clara para reconocerla fácilmente.
+                    </small>
+                  </div>
+                </div>
+
+                {message && (
+                  <div className={`alert alert-${messageVariant || "danger"}`}>
+                    {message}
                   </div>
                 )}
+
+                {currentPhotoUrl && (
+                  <div className="mb-3 text-center">
+                    <p className="mb-1 text-muted">Foto actual</p>
+                    <Image
+                      src={currentPhotoUrl}
+                      roundedCircle
+                      width={140}
+                      height={140}
+                    />
+                  </div>
+                )}
+
                 <Form onSubmit={onSubmit}>
-                  <Form.Group controlId="filePetPhoto">
+                  <Form.Group controlId="filePetPhoto" className="mb-3">
                     <Form.Label>Nueva foto</Form.Label>
                     <FormControl
                       type="file"
@@ -93,15 +119,17 @@ const PhotoProfilePets = () => {
                     />
                   </Form.Group>
 
-                  <div className="mt-3">
-                    <Button type="submit" variant="primary">
+                  <div className="mt-3 d-flex">
+                    <Button type="submit" className="btn-pill-primary">
+                      <FaUpload className="me-2" />
                       Subir
                     </Button>
                     <Button
                       className="ms-2"
-                      variant="secondary"
+                      variant="outline-secondary"
                       onClick={() => navigate("/owner/pets")}
                     >
+                      <FaArrowLeft className="me-1" />
                       Cancelar
                     </Button>
                   </div>

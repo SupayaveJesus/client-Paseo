@@ -1,3 +1,4 @@
+// src/pages/owner/walks/OwnerWalkDetailPage.jsx
 import { useEffect, useState } from "react";
 import {
   Button,
@@ -11,6 +12,17 @@ import {
   Row,
   Alert
 } from "react-bootstrap";
+import {
+  FaRoute,
+  FaDog,
+  FaUserTie,
+  FaArrowLeft,
+  FaStar,
+  FaCalendarAlt,
+  FaClock,
+  FaCamera,
+  FaMapMarkedAlt
+} from "react-icons/fa";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Header from "../../../components/Header";
 import useAuthentication from "../../../hooks/useAuthentication";
@@ -38,11 +50,23 @@ const formatDate = (isoString) => {
   return d.toLocaleString();
 };
 
+const formatTime = (isoString) => {
+  if (!isoString) return "";
+  const d = new Date(isoString);
+  return d.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+};
+
+
 const WalkRouteMap = ({ locations }) => {
   if (!GOOGLE_MAPS_API_KEY) {
     return (
       <Alert variant="warning" className="mt-2">
-        Para ver el mapa del recorrido configura <code>VITE_GOOGLE_MAPS_API_KEY</code>.
+        Para ver el mapa del recorrido configura{" "}
+        <code>VITE_GOOGLE_MAPS_API_KEY</code>.
       </Alert>
     );
   }
@@ -75,9 +99,9 @@ const WalkRouteMap = ({ locations }) => {
       style={{
         height: "300px",
         width: "100%",
-        borderRadius: "6px",
+        borderRadius: "10px",
         overflow: "hidden",
-        border: "1px solid #ddd"
+        border: "1px solid #e5e7eb"
       }}
     >
       <GoogleMap
@@ -88,7 +112,7 @@ const WalkRouteMap = ({ locations }) => {
       >
         <Polyline
           path={path}
-          options={{ strokeColor: "#0d6efd", strokeOpacity: 0.9, strokeWeight: 4 }}
+          options={{ strokeColor: "#2563eb", strokeOpacity: 0.9, strokeWeight: 4 }}
         />
         <Marker position={path[0]} label="Inicio" />
         <Marker position={path[path.length - 1]} label="Fin" />
@@ -127,7 +151,6 @@ const OwnerWalkDetailPage = () => {
   const preselectedWalker = location.state?.walkerName;
   const preselectedWalkerId = location.state?.walkerId;
 
-  // ---------- Carga inicial ----------
   useEffect(() => {
     if (isNew) {
       setLoading(false);
@@ -164,12 +187,11 @@ const OwnerWalkDetailPage = () => {
       .finally(() => setLoading(false));
   }, [id, isNew]);
 
-  // ---------- Auto-refresh cada 60s cuando el paseo está aceptado / en curso ----------
+  // ---------- Auto-refresh cada 60s ----------
   useEffect(() => {
     if (isNew) return;
     if (!walk) return;
 
-    // Mientras esté ACCEPTED o IN_PROGRESS, refrescamos cada minuto
     if (walk.status !== "ACCEPTED" && walk.status !== "IN_PROGRESS") return;
 
     const intervalId = setInterval(() => {
@@ -179,7 +201,6 @@ const OwnerWalkDetailPage = () => {
         })
         .catch((err) => {
           console.error("Auto-refresh walk detail error:", err);
-          // No mostramos alerta aquí para no molestar al usuario cada minuto
         });
     }, 60 * 1000);
 
@@ -224,6 +245,7 @@ const OwnerWalkDetailPage = () => {
       .finally(() => setSavingNew(false));
   };
 
+  // ---------- Review ----------
   const canReview =
     !isNew && walk && walk.status === "FINISHED" && !walk.review;
 
@@ -253,7 +275,7 @@ const OwnerWalkDetailPage = () => {
     return (
       <>
         <Header />
-        <Container className="mt-3">
+        <Container className="app-page">
           {message && (
             <Alert
               variant={messageVariant || "info"}
@@ -264,18 +286,22 @@ const OwnerWalkDetailPage = () => {
             </Alert>
           )}
 
-          <Row>
+          <Row className="justify-content-center">
             <Col md={8}>
-              <Card>
+              <Card className="app-card-elevated">
                 <Card.Body>
-                  <h2>Nuevo paseo</h2>
-                  <p>
+                  <div className="d-flex align-items-center mb-2">
+                    <FaRoute className="me-2 text-primary" />
+                    <h2 className="app-section-title mb-0">Nuevo paseo</h2>
+                  </div>
+                  <p className="text-muted">
                     Completa el formulario para solicitar un nuevo paseo
                     para tu mascota.
                   </p>
 
                   {preselectedWalker && (
                     <p>
+                      <FaUserTie className="me-1" />
                       <strong>Paseador seleccionado:</strong> {preselectedWalker}{" "}
                       (ID {preselectedWalkerId})
                     </p>
@@ -283,7 +309,10 @@ const OwnerWalkDetailPage = () => {
 
                   <Form onSubmit={onNewWalkSubmit}>
                     <Form.Group className="mb-2">
-                      <Form.Label>Mascota</Form.Label>
+                      <Form.Label>
+                        <FaDog className="me-1" />
+                        Mascota
+                      </Form.Label>
                       <FormControl
                         as="select"
                         value={petId}
@@ -306,7 +335,10 @@ const OwnerWalkDetailPage = () => {
                     <Row>
                       <Col md={6}>
                         <Form.Group className="mb-2">
-                          <Form.Label>Fecha</Form.Label>
+                          <Form.Label>
+                            <FaCalendarAlt className="me-1" />
+                            Fecha
+                          </Form.Label>
                           <FormControl
                             type="date"
                             value={date}
@@ -317,7 +349,10 @@ const OwnerWalkDetailPage = () => {
                       </Col>
                       <Col md={6}>
                         <Form.Group className="mb-2">
-                          <Form.Label>Hora</Form.Label>
+                          <Form.Label>
+                            <FaClock className="me-1" />
+                            Hora
+                          </Form.Label>
                           <FormControl
                             type="time"
                             value={time}
@@ -354,16 +389,17 @@ const OwnerWalkDetailPage = () => {
                     <div className="mt-3">
                       <Button
                         type="submit"
-                        variant="primary"
+                        className="btn-pill-primary"
                         disabled={savingNew || pets.length === 0}
                       >
                         {savingNew ? "Guardando..." : "Crear paseo"}
                       </Button>
                       <Button
-                        className="ms-2"
-                        variant="secondary"
+                        className="ms-2 rounded-pill"
+                        variant="outline-secondary"
                         onClick={() => navigate("/owner/walks")}
                       >
+                        <FaArrowLeft className="me-1" />
                         Volver
                       </Button>
                     </div>
@@ -382,7 +418,7 @@ const OwnerWalkDetailPage = () => {
     return (
       <>
         <Header />
-        <Container className="mt-3">
+        <Container className="app-page">
           <p>Cargando...</p>
         </Container>
       </>
@@ -393,9 +429,14 @@ const OwnerWalkDetailPage = () => {
     return (
       <>
         <Header />
-        <Container className="mt-3">
+        <Container className="app-page">
           <p>No se encontró el paseo.</p>
-          <Button variant="secondary" onClick={() => navigate("/owner/walks")}>
+          <Button
+            variant="outline-secondary"
+            className="rounded-pill mt-2"
+            onClick={() => navigate("/owner/walks")}
+          >
+            <FaArrowLeft className="me-1" />
             Volver
           </Button>
         </Container>
@@ -406,7 +447,7 @@ const OwnerWalkDetailPage = () => {
   return (
     <>
       <Header />
-      <Container className="mt-3">
+      <Container className="app-page">
         {message && (
           <Alert
             variant={messageVariant || "info"}
@@ -419,9 +460,15 @@ const OwnerWalkDetailPage = () => {
 
         <Row>
           <Col md={8}>
-            <Card>
+            <Card className="app-card-elevated">
               <Card.Body>
-                <h2>Detalle del paseo #{walk.id}</h2>
+                <div className="d-flex align-items-center mb-2">
+                  <FaRoute className="me-2 text-primary" />
+                  <h2 className="app-section-title mb-0">
+                    Detalle del paseo #{walk.id}
+                  </h2>
+                </div>
+
                 <p>
                   <strong>Fecha / hora:</strong>{" "}
                   {formatDate(walk.scheduledAt)}
@@ -440,29 +487,45 @@ const OwnerWalkDetailPage = () => {
                   <strong>Notas:</strong> {walk.notes || "Sin notas"}
                 </p>
 
-                <h5 className="mt-3">Recorrido</h5>
+                <h5 className="mt-3">
+                  <FaMapMarkedAlt className="me-1" />
+                  Recorrido
+                </h5>
 
                 <WalkRouteMap locations={walk.locations} />
 
                 {walk.locations && walk.locations.length > 0 ? (
-                  <ListGroup
-                    style={{ maxHeight: "200px", overflowY: "auto" }}
-                  >
-                    {walk.locations.map((loc) => (
-                      <ListGroup.Item key={loc.id}>
-                        {loc.lat}, {loc.lng} - {formatDate(loc.timestamp)}
+                  <ListGroup style={{ maxHeight: "200px", overflowY: "auto" }}>
+                    {walk.locations.map((loc, index) => (
+                      <ListGroup.Item
+                        key={loc.id}
+                        className="d-flex justify-content-between align-items-center"
+                        title={`${loc.lat}, ${loc.lng}`} // tooltip con coords
+                      >
+                        <div>
+                          <strong>Punto {index + 1}</strong>
+                          <div className="text-muted small">
+                            Actualización del recorrido
+                          </div>
+                        </div>
+                        <span className="text-muted small">
+                          {formatDate(loc.timestamp)} ({formatTime(loc.timestamp)})
+                        </span>
                       </ListGroup.Item>
                     ))}
                   </ListGroup>
                 ) : (
-                  <p>No hay puntos de ubicación registrados aún.</p>
+                  <p className="text-muted">
+                    No hay puntos de ubicación registrados aún.
+                  </p>
                 )}
 
                 <Button
-                  className="mt-3"
-                  variant="secondary"
+                  className="mt-3 rounded-pill"
+                  variant="outline-secondary"
                   onClick={() => navigate("/owner/walks")}
                 >
+                  <FaArrowLeft className="me-1" />
                   Volver
                 </Button>
               </Card.Body>
@@ -470,10 +533,15 @@ const OwnerWalkDetailPage = () => {
           </Col>
 
           <Col md={4} className="mt-3 mt-md-0">
-            <Card>
+            <Card className="app-card-elevated mb-3">
               <Card.Body>
-                <h5>Fotos del paseo</h5>
-                {photos.length === 0 && <p>No hay fotos.</p>}
+                <h5>
+                  <FaCamera className="me-1" />
+                  Fotos del paseo
+                </h5>
+                {photos.length === 0 && (
+                  <p className="text-muted">No hay fotos.</p>
+                )}
                 <div>
                   {photos.map((p) => (
                     <div key={p.id} className="mb-2">
@@ -491,9 +559,12 @@ const OwnerWalkDetailPage = () => {
             </Card>
 
             {canReview && (
-              <Card className="mt-3">
+              <Card className="app-card-elevated">
                 <Card.Body>
-                  <h5>Dejar review</h5>
+                  <h5>
+                    <FaStar className="me-1 text-warning" />
+                    Dejar review
+                  </h5>
                   <Form onSubmit={onReviewSubmit}>
                     <Form.Group className="mb-2">
                       <Form.Label>Puntuación (1 a 5)</Form.Label>
@@ -519,9 +590,8 @@ const OwnerWalkDetailPage = () => {
                       />
                     </Form.Group>
                     <Button
-                      className="mt-2"
+                      className="mt-2 btn-pill-primary"
                       type="submit"
-                      variant="primary"
                       disabled={loadingReview}
                     >
                       {loadingReview ? "Guardando..." : "Enviar review"}
