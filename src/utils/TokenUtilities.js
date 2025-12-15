@@ -1,8 +1,6 @@
-// src/utils/TokenUtilities.js
-
 const ACCESS_TOKEN_KEY = "accessToken";
-const USER_ROLE_KEY = "userRole";   // "owner" | "walker"
-const USER_DATA_KEY = "userData";   // info básica del owner/walker
+const USER_ROLE_KEY = "userRole";   
+const USER_DATA_KEY = "userData";  
 
 const saveSession = (token, role, user) => {
     localStorage.setItem(ACCESS_TOKEN_KEY, token);

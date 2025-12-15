@@ -259,18 +259,24 @@ const OwnerWalkDetailPage = () => {
       comment
     })
       .then(() => {
-        alert("Review guardado");
+        setMessageVariant("success");
+        setMessage("¡Gracias! Tu review fue guardada.");
         return getWalkDetail(walk.id);
       })
-      .then((updated) => setWalk(updated))
+      .then((updated) => {
+        setWalk(updated);
+        setRating("5");
+        setComment("");
+      })
       .catch((error) => {
         console.error(error);
-        alert("Error al guardar el review");
+        setMessageVariant("danger");
+        setMessage("Error al guardar el review");
       })
       .finally(() => setLoadingReview(false));
   };
 
-  // ---------- Render: nuevo paseo ----------
+  // ---------- nuevo paseo ----------
   if (isNew) {
     return (
       <>
@@ -413,7 +419,7 @@ const OwnerWalkDetailPage = () => {
     );
   }
 
-  // ---------- Render: detalle ----------
+  // ---------- detalle ----------
   if (loading) {
     return (
       <>

@@ -1,4 +1,3 @@
-// src/service/ownerWalkerService.js
 import axios from "axios";
 import { getAccessToken } from "../utils/TokenUtilities";
 

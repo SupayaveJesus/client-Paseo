@@ -5,6 +5,7 @@ import useWalkerAutoLocation, {
   WALKER_AVAILABILITY_STORAGE_KEY
 } from "../hooks/useWalkerAutoLocation";
 import "./Header.css"; 
+
 const Header = () => {
   const { role, user, logout } = useAuthentication(false);
 

@@ -1,4 +1,3 @@
-// src/pages/owner/OwnerHomePage.jsx
 import { Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
@@ -64,7 +63,6 @@ const OwnerHomePage = () => {
               </div>
             </div>
 
-            {/* Lado derecho con iconos grandes */}
             <div className="owner-home-right">
               <div className="owner-hero-circle owner-hero-main">
                 <FaDog />

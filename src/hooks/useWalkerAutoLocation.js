@@ -3,13 +3,6 @@ import { sendLocation } from "../service/walkerService";
 
 export const WALKER_AVAILABILITY_STORAGE_KEY = "walker_available";
 
-/**
- * Envia la ubicación del paseador cada 3 minutos
- * mientras `available === true`.
- *
- * Si pasas setMessage / setMessageVariant, mostrará mensajes
- * en la pantalla; si no, funciona en silencio.
- */
 export default function useWalkerAutoLocation(
     available,
     { setMessage, setMessageVariant } = {}
